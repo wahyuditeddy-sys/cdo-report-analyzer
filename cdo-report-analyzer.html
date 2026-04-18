@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="id" data-color-mode="dark" data-dark-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDO Report Intelligence Analyzer — Lintasarta</title>
+<style>
+  /* ── GitHub Primer Design System (Dark) ── */
+  :root {
+    --canvas-default:    #0d1117;
+    --canvas-subtle:     #161b22;
+    --canvas-inset:      #010409;
+    --canvas-overlay:    #1c2128;
+    --border-default:    #30363d;
+    --border-muted:      #21262d;
+    --fg-default:        #e6edf3;
+    --fg-muted:          #8b949e;
+    --fg-subtle:         #6e7681;
+    --accent-fg:         #58a6ff;
+    --accent-emphasis:   #1f6feb;
+    --accent-subtle:     rgba(31,111,235,0.15);
+    --success-fg:        #3fb950;
+    --success-subtle:    rgba(46,160,67,0.15);
+    --attention-fg:      #d29922;
+    --attention-subtle:  rgba(210,153,34,0.15);
+    --danger-fg:         #f85149;
+    --danger-subtle:     rgba(248,81,73,0.15);
+    --done-fg:           #a371f7;
+    --done-subtle:       rgba(163,113,247,0.15);
+    --neutral-muted:     rgba(110,118,129,0.4);
+    --font:   -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    --mono:   ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --shadow-medium: 0 3px 6px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--canvas-default);
+    color: var(--fg-default);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── HEADER (GitHub-style topnav) ── */
+  .header {
+    background: #161b22;
+    border-bottom: 1px solid var(--border-default);
+    padding: 0 16px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .gh-logo {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none; color: var(--fg-default);
+  }
+  .gh-logo svg { width: 32px; height: 32px; fill: var(--fg-default); }
+  .repo-breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 400; color: var(--fg-muted);
+  }
+  .repo-breadcrumb .repo-owner { color: var(--fg-muted); }
+  .repo-breadcrumb .sep { color: var(--fg-subtle); }
+  .repo-breadcrumb .repo-name { font-weight: 600; color: var(--accent-fg); }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .badge-api {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-default);
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--fg-muted);
+    background: var(--canvas-subtle);
+  }
+
+  /* ── STATUS DOT ── */
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-green  { background: var(--success-fg); box-shadow: 0 0 0 2px rgba(63,185,80,.25); animation: pulse 2s ease-in-out infinite; }
+  .dot-red    { background: var(--danger-fg); }
+  .dot-yellow { background: var(--attention-fg); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+
+  /* ── LAYOUT ── */
+  .app-layout {
+    display: grid;
+    grid-template-columns: 296px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--canvas-subtle);
+    border-right: 1px solid var(--border-default);
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Section labels */
+  .sec-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--fg-subtle);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── GH-STYLE INPUTS ── */
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-default);
+  }
+  .form-hint { font-size: 11px; color: var(--fg-muted); }
+  .gh-input, .gh-select {
+    width: 100%;
+    padding: 5px 12px;
+    background: var(--canvas-default);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    color: var(--fg-default);
+    font-size: 14px;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    line-height: 20px;
+  }
+  .gh-input:focus, .gh-select:focus {
+    border-color: var(--accent-emphasis);
+    box-shadow: 0 0 0 3px rgba(31,111,235,.3);
+  }
+  .gh-input[type="password"] { letter-spacing: 3px; }
+  .gh-select option { background: var(--canvas-overlay); }
+
+  /* ── GH BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 5px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all .15s;
+    border: 1px solid;
+    white-space: nowrap;
+    line-height: 20px;
+  }
+  .btn-primary {
+    background: #238636;
+    border-color: rgba(240,246,252,.1);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-primary:disabled { background: rgba(35,134,54,.6); cursor: not-allowed; opacity: 0.7; }
+  .btn-default {
+    background: #21262d;
+    border-color: rgba(240,246,252,.1);
+    color: var(--fg-default);
+  }
+  .btn-default:hover { background: #30363d; border-color: var(--fg-muted); }
+  .btn-danger {
+    background: transparent;
+    border-color: var(--border-default);
+    color: var(--danger-fg);
+  }
+  .btn-danger:hover { background: var(--danger-subtle); border-color: var(--danger-fg); }
+  .btn-sm { padding: 3px 12px; font-size: 12px; }
+  .btn-full { width: 100%; }
+  .btn-link {
+    background: none; border: none;
+    color: var(--accent-fg); cursor: pointer;
+    font-size: 12px; padding: 0;
+    font-family: var(--font);
+  }
+  .btn-link:hover { text-decoration: underline; }
+
+  /* ── BOX ── */
+  .gh-box {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 16px;
+    background: var(--canvas-overlay);
+  }
+
+  /* ── MODE GRID ── */
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .mode-card {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    background: var(--canvas-default);
+    transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .mode-card:hover { border-color: var(--accent-emphasis); background: var(--accent-subtle); }
+  .mode-card.active { border-color: var(--accent-emphasis); background: var(--accent-subtle); }
+  .mode-card .mc-icon { font-size: 18px; }
+  .mode-card .mc-label { font-size: 10px; color: var(--fg-muted); font-weight: 500; }
+  .mode-card.active .mc-label { color: var(--accent-fg); }
+
+  /* ── TOGGLE ── */
+  .opt-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-muted);
+  }
+  .opt-row:last-child { border-bottom: none; }
+  .opt-info .opt-name { font-size: 13px; color: var(--fg-default); }
+  .opt-info .opt-desc { font-size: 11px; color: var(--fg-muted); margin-top: 1px; }
+  .toggle {
+    position: relative; width: 32px; height: 18px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--border-default);
+    border-radius: 9px;
+    transition: background .2s;
+  }
+  .toggle input:checked ~ .toggle-track { background: #238636; }
+  .toggle-thumb {
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform .2s;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(14px); }
+
+  /* ── SEVERITY CHIPS ── */
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: opacity .15s;
+    user-select: none;
+  }
+  .chip-red    { background: var(--danger-subtle);     border-color: rgba(248,81,73,.4);     color: var(--danger-fg); }
+  .chip-yellow { background: var(--attention-subtle);  border-color: rgba(210,153,34,.4);    color: var(--attention-fg); }
+  .chip-blue   { background: var(--accent-subtle);     border-color: rgba(88,166,255,.4);    color: var(--accent-fg); }
+  .chip-green  { background: var(--success-subtle);    border-color: rgba(63,185,80,.4);     color: var(--success-fg); }
+  .chip:not(.active) { opacity: 0.35; }
+
+  /* ── LANG ── */
+  .lang-toggle { display: flex; border: 1px solid var(--border-default); border-radius: var(--radius-sm); overflow: hidden; }
+  .lang-opt {
+    flex: 1; padding: 5px 8px; text-align: center;
+    font-size: 12px; cursor: pointer;
+    color: var(--fg-muted); background: var(--canvas-default);
+    transition: all .15s; user-select: none;
+  }
+  .lang-opt.active { background: var(--accent-emphasis); color: #fff; }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    display: flex; flex-direction: column;
+    padding: 20px; gap: 16px;
+    overflow-y: auto;
+  }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    background: var(--canvas-subtle);
+  }
+  .upload-zone:hover, .upload-zone.drag {
+    border-color: var(--accent-emphasis);
+    background: var(--accent-subtle);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--fg-muted); margin-bottom: 12px; }
+  .file-badges { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .file-badge {
+    padding: 2px 8px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--fg-subtle);
+    background: var(--canvas-default);
+  }
+
+  /* ── FILE LIST ── */
+  .file-list { display: flex; flex-direction: column; gap: 6px; }
+  .file-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: var(--canvas-subtle);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+  }
+  .file-ico { font-size: 18px; flex-shrink: 0; }
+  .file-name { font-size: 13px; font-weight: 500; flex: 1; color: var(--accent-fg); }
+  .file-size { font-size: 11px; color: var(--fg-subtle); font-family: var(--mono); }
+  .file-del {
+    padding: 2px 8px; font-size: 11px;
+    border: 1px solid rgba(248,81,73,.3);
+    border-radius: var(--radius-sm);
+    background: var(--danger-subtle);
+    color: var(--danger-fg);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .file-del:hover { background: rgba(248,81,73,.3); }
+
+  /* ── TEXTAREA ── */
+  .gh-textarea {
+    width: 100%;
+    background: var(--canvas-default);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--fg-default);
+    font-size: 13px;
+    font-family: var(--font);
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .gh-textarea:focus {
+    border-color: var(--accent-emphasis);
+    box-shadow: 0 0 0 3px rgba(31,111,235,.3);
+  }
+  .gh-textarea::placeholder { color: var(--fg-subtle); }
+
+  /* ── SEPARATOR ── */
+  .sep-row {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--fg-subtle); font-size: 11px;
+  }
+  .sep-line { flex: 1; border-top: 1px solid var(--border-muted); }
+
+  /* ── ACTION BAR ── */
+  .action-bar {
+    display: flex; gap: 8px; align-items: center;
+  }
+
+  /* ── EXPORT BAR ── */
+  .export-bar {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    padding: 8px 12px;
+    background: var(--canvas-subtle);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+  }
+  .export-label { font-size: 11px; color: var(--fg-muted); }
+
+  /* ── OUTPUT ── */
+  .output-panel {
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    background: var(--canvas-subtle);
+    overflow: hidden;
+  }
+  .output-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--canvas-overlay);
+    border-bottom: 1px solid var(--border-default);
+  }
+  .output-title-row { display: flex; align-items: center; gap: 8px; }
+  .output-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--fg-default);
+    font-family: var(--mono);
+  }
+  .output-actions { display: flex; gap: 6px; }
+  .output-body {
+    min-height: 400px;
+    max-height: 72vh;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  /* Empty state */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 400px; gap: 12px; color: var(--fg-subtle);
+  }
+  .empty-icon { font-size: 48px; opacity: .35; }
+  .empty-text { font-size: 14px; }
+  .empty-sub  { font-size: 12px; color: var(--fg-subtle); text-align: center; max-width: 300px; line-height: 1.6; }
+
+  /* Loading */
+  .loading-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 400px; gap: 16px;
+  }
+  .gh-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border-default);
+    border-top-color: var(--accent-fg);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-label { font-size: 13px; color: var(--fg-muted); font-family: var(--mono); }
+  .loading-model { font-size: 11px; color: var(--fg-subtle); }
+
+  /* Result */
+  .result-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── MARKDOWN STYLES ── */
+  .md-content h1 {
+    font-size: 20px; font-weight: 600; color: var(--fg-default);
+    padding-bottom: 8px; border-bottom: 1px solid var(--border-muted);
+    margin: 20px 0 12px;
+  }
+  .md-content h2 {
+    font-size: 17px; font-weight: 600; color: var(--fg-default);
+    padding-bottom: 6px; border-bottom: 1px solid var(--border-muted);
+    margin: 18px 0 10px;
+  }
+  .md-content h3 {
+    font-size: 15px; font-weight: 600; color: var(--fg-default);
+    margin: 16px 0 8px;
+  }
+  .md-content p { font-size: 14px; color: var(--fg-default); line-height: 1.75; margin: 6px 0; }
+  .md-content strong { font-weight: 600; color: var(--fg-default); }
+  .md-content em { color: var(--fg-muted); font-style: italic; }
+  .md-content code {
+    font-family: var(--mono); font-size: 12px;
+    background: var(--neutral-muted);
+    padding: 2px 5px; border-radius: 4px;
+    color: var(--done-fg);
+  }
+  .md-content ul, .md-content ol { padding-left: 24px; margin: 6px 0; }
+  .md-content li { font-size: 14px; line-height: 1.75; color: var(--fg-default); }
+  .md-content blockquote {
+    border-left: 3px solid var(--border-default);
+    padding: 4px 12px; margin: 8px 0;
+    color: var(--fg-muted); font-style: italic;
+  }
+  .md-content hr { border: none; border-top: 1px solid var(--border-muted); margin: 16px 0; }
+  /* Tables */
+  .md-table-wrap { overflow-x: auto; margin: 10px 0; border-radius: var(--radius-sm); border: 1px solid var(--border-default); }
+  .md-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .md-table th {
+    padding: 8px 12px; text-align: left;
+    background: var(--canvas-overlay);
+    color: var(--fg-muted); font-size: 11px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .md-table td { padding: 8px 12px; border-bottom: 1px solid var(--border-muted); color: var(--fg-default); vertical-align: top; }
+  .md-table tr:last-child td { border-bottom: none; }
+  .md-table tr:hover td { background: rgba(255,255,255,.02); }
+  /* RAG badges */
+  .rag-red    { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--danger-subtle);    color: var(--danger-fg);    border: 1px solid rgba(248,81,73,.3); }
+  .rag-yellow { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--attention-subtle); color: var(--attention-fg); border: 1px solid rgba(210,153,34,.3); }
+  .rag-green  { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--success-subtle);   color: var(--success-fg);   border: 1px solid rgba(63,185,80,.3); }
+  .rag-blue   { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--accent-subtle);    color: var(--accent-fg);    border: 1px solid rgba(88,166,255,.3); }
+
+  /* ── FLASH ALERT ── */
+  .flash {
+    padding: 10px 16px; border-radius: var(--radius-sm); font-size: 13px;
+    display: flex; align-items: flex-start; gap: 10px;
+    border: 1px solid;
+  }
+  .flash-error   { background: var(--danger-subtle);    border-color: rgba(248,81,73,.4);    color: var(--danger-fg); }
+  .flash-success { background: var(--success-subtle);   border-color: rgba(63,185,80,.4);    color: var(--success-fg); }
+  .flash-warn    { background: var(--attention-subtle); border-color: rgba(210,153,34,.4);   color: var(--attention-fg); }
+  .flash-info    { background: var(--accent-subtle);    border-color: rgba(88,166,255,.4);   color: var(--accent-fg); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    z-index: 999;
+    opacity: 0; transform: translateY(8px);
+    transition: all .25s;
+    pointer-events: none;
+    box-shadow: var(--shadow-medium);
+    max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast-success { background: #238636; color: #fff; }
+  .toast-error   { background: #b91c1c; color: #fff; }
+  .toast-info    { background: var(--accent-emphasis); color: #fff; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 7px; height: 7px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--fg-subtle); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 880px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border-default); }
+  }
+
+  /* ── STREAMING ── */
+  .stream-cursor::after {
+    content: '▋'; animation: blink .9s step-end infinite;
+    color: var(--accent-fg); font-size: 13px;
+  }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+  /* ── MISC ── */
+  .divider { border: none; border-top: 1px solid var(--border-muted); margin: 4px 0; }
+  .text-muted { color: var(--fg-muted); }
+  .text-subtle { color: var(--fg-subtle); }
+  .font-mono { font-family: var(--mono); }
+  .gap-4 { display: flex; flex-direction: column; gap: 4px; }
+  .gap-8 { display: flex; flex-direction: column; gap: 8px; }
+  .token-counter {
+    font-size: 11px; font-family: var(--mono);
+    color: var(--fg-subtle); text-align: right; margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="header-left">
+    <a class="gh-logo" href="#" onclick="return false">
+      <svg viewBox="0 0 16 16" aria-label="GitHub">
+        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+    </a>
+    <div class="repo-breadcrumb">
+      <span class="repo-owner">lintasarta</span>
+      <span class="sep">/</span>
+      <span class="repo-name">cdo-report-analyzer</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="badge-api">
+      <span class="dot dot-red" id="statusDot"></span>
+      <span id="statusText" class="font-mono" style="font-size:11px">Belum terhubung</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── APP ── -->
+<div class="app-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+
+    <!-- API Config -->
+    <div>
+      <div class="sec-label">⚙ Konfigurasi API</div>
+      <div class="gh-box">
+        <div class="form-group">
+          <label class="form-label">Anthropic API Key</label>
+          <input type="password" class="gh-input" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+          <span class="form-hint">Key tidak disimpan — hanya digunakan di browser</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model</label>
+          <select class="gh-select" id="modelSelect">
+            <option value="claude-sonnet-4-5">Claude Sonnet 4.5 — Rekomendasi</option>
+            <option value="claude-opus-4-5">Claude Opus 4.5 — Paling Akurat</option>
+            <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 — Cepat & Hemat</option>
+          </select>
+        </div>
+        <button class="btn btn-default btn-full btn-sm" onclick="testApiKey()">
+          🔌 Tes Koneksi API
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Analisis -->
+    <div>
+      <div class="sec-label">🎯 Mode Analisis</div>
+      <div class="mode-grid">
+        <div class="mode-card active" data-mode="full" onclick="selectMode(this,'full')">
+          <span class="mc-icon">🔍</span>
+          <span class="mc-label">Analisis Penuh</span>
+        </div>
+        <div class="mode-card" data-mode="errors" onclick="selectMode(this,'errors')">
+          <span class="mc-icon">⚠️</span>
+          <span class="mc-label">Cek Kesalahan</span>
+        </div>
+        <div class="mode-card" data-mode="trend" onclick="selectMode(this,'trend')">
+          <span class="mc-icon">📈</span>
+          <span class="mc-label">Trend Analysis</span>
+        </div>
+        <div class="mode-card" data-mode="sla" onclick="selectMode(this,'sla')">
+          <span class="mc-icon">🎯</span>
+          <span class="mc-label">SLA / KPI</span>
+        </div>
+        <div class="mode-card" data-mode="risk" onclick="selectMode(this,'risk')">
+          <span class="mc-icon">🛡️</span>
+          <span class="mc-label">Risk Assessment</span>
+        </div>
+        <div class="mode-card" data-mode="action" onclick="selectMode(this,'action')">
+          <span class="mc-icon">📋</span>
+          <span class="mc-label">Action Plan</span>
+        </div>
+        <div class="mode-card" data-mode="exec" onclick="selectMode(this,'exec')">
+          <span class="mc-icon">👔</span>
+          <span class="mc-label">Exec Summary</span>
+        </div>
+        <div class="mode-card" data-mode="predict" onclick="selectMode(this,'predict')">
+          <span class="mc-icon">🔮</span>
+          <span class="mc-label">Prediksi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opsi Analisis -->
+    <div>
+      <div class="sec-label">🔧 Opsi Analisis</div>
+      <div class="gh-box" style="gap:0;padding:8px 12px;">
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">Deteksi Kontradiksi Data</div>
+            <div class="opt-desc">Bandingkan narasi vs angka aktual</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-contradiction" checked />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">Analisis Multi-Bulan</div>
+            <div class="opt-desc">Korelasi lintas periode laporan</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-multimonth" checked />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">Cek Konsistensi SLO/SLA</div>
+            <div class="opt-desc">Validasi target vs aktual</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-sla" checked />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">Deteksi Copy-Paste Error</div>
+            <div class="opt-desc">Teks duplikat tidak diupdate</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-cpaste" />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">RAG Status Table</div>
+            <div class="opt-desc">Output dengan warna Red/Amber/Green</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-rag" checked />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="opt-row">
+          <div class="opt-info">
+            <div class="opt-name">Rekomendasi ITIL v4</div>
+            <div class="opt-desc">Sesuai framework Lintasarta</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="tog-itil" checked />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Severity Filter -->
+    <div>
+      <div class="sec-label">🚦 Tampilkan Severity</div>
+      <div class="chip-row">
+        <span class="chip chip-red active"    onclick="this.classList.toggle('active')">Critical</span>
+        <span class="chip chip-yellow active" onclick="this.classList.toggle('active')">Warning</span>
+        <span class="chip chip-blue active"   onclick="this.classList.toggle('active')">Info</span>
+        <span class="chip chip-green active"  onclick="this.classList.toggle('active')">OK</span>
+      </div>
+    </div>
+
+    <!-- Bahasa Output -->
+    <div>
+      <div class="sec-label">🌐 Bahasa Output</div>
+      <div class="lang-toggle">
+        <div class="lang-opt active" onclick="selectLang(this,'id')">🇮🇩 Bahasa Indonesia</div>
+        <div class="lang-opt" onclick="selectLang(this,'en')">🇺🇸 English</div>
+      </div>
+    </div>
+
+    <!-- Konteks -->
+    <div>
+      <div class="sec-label">📁 Konteks Organisasi</div>
+      <div class="gh-box">
+        <div class="form-group">
+          <label class="form-label">Periode Laporan</label>
+          <input type="text" class="gh-input" id="reportPeriod" placeholder="Contoh: Februari 2026" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Departemen</label>
+          <input type="text" class="gh-input" id="department" value="CDO - Cloud Delivery & Ops" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Konteks Tambahan</label>
+          <input type="text" class="gh-input" id="extraCtx" placeholder="Contoh: GPU tenant baru = 3" />
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main-content">
+
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" multiple
+        accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.txt,.csv,.md"
+        onchange="handleFiles(this.files)" />
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Upload Laporan CDO</div>
+      <div class="upload-sub">Drag & drop atau klik untuk pilih file</div>
+      <div class="file-badges">
+        <span class="file-badge">PDF</span>
+        <span class="file-badge">DOCX</span>
+        <span class="file-badge">PPTX</span>
+        <span class="file-badge">XLSX</span>
+        <span class="file-badge">TXT</span>
+        <span class="file-badge">CSV</span>
+        <span class="file-badge">MD</span>
+      </div>
+    </div>
+
+    <!-- File List -->
+    <div class="file-list" id="fileList"></div>
+
+    <!-- Text Input -->
+    <div class="sep-row">
+      <div class="sep-line"></div>
+      <span>atau paste konten laporan</span>
+      <div class="sep-line"></div>
+    </div>
+
+    <div class="gap-4">
+      <textarea class="gh-textarea" id="reportText" rows="6"
+        placeholder="Paste teks laporan, data tabel, atau ringkasan di sini...&#10;Contoh: konten CDO Monthly Report yang sudah diekstrak dari PDF/DOCX."></textarea>
+      <div class="token-counter" id="charCount">0 karakter</div>
+    </div>
+
+    <!-- Custom Prompt -->
+    <div class="gap-4">
+      <label class="form-label" style="font-size:12px;color:var(--fg-muted)">💬 Pertanyaan / Instruksi Spesifik (Opsional)</label>
+      <textarea class="gh-textarea" id="customPrompt" rows="3"
+        placeholder="Contoh: Fokus pada analisis power consumption CGK2 dan korelasi dengan GPU tenant baru. Bandingkan dengan bulan sebelumnya."></textarea>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button class="btn btn-primary" id="runBtn" onclick="runAnalysis()" style="flex:1;padding:8px 20px;font-size:14px;">
+        ▶ Jalankan Analisis
+      </button>
+      <button class="btn btn-default" onclick="clearAll()">🗑 Bersihkan</button>
+    </div>
+
+    <!-- Warning: API key exposed -->
+    <div class="flash flash-warn" id="secWarn" style="display:none">
+      ⚠️ <span>API Key dikirim langsung dari browser. Gunakan tool ini hanya di jaringan privat / lokal. Jangan gunakan di komputer publik.</span>
+    </div>
+
+    <!-- Export Bar -->
+    <div class="export-bar" id="exportBar" style="display:none">
+      <span class="export-label">Export hasil:</span>
+      <button class="btn btn-default btn-sm" onclick="exportMarkdown()">📄 Markdown</button>
+      <button class="btn btn-default btn-sm" onclick="exportText()">📝 Plain Text</button>
+      <button class="btn btn-default btn-sm" onclick="copyToClipboard()">📋 Copy</button>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="output-panel">
+      <div class="output-header">
+        <div class="output-title-row">
+          <span class="output-title">// HASIL ANALISIS</span>
+        </div>
+        <div class="output-actions">
+          <button class="btn btn-default btn-sm" id="toggleViewBtn" onclick="toggleOutputMode()">Tampilan Detail</button>
+        </div>
+      </div>
+      <div class="output-body" id="outputBody">
+        <div class="empty-state">
+          <div class="empty-icon">🔬</div>
+          <div class="empty-text">Belum ada analisis</div>
+          <div class="empty-sub">Upload file laporan atau paste konten teks, lalu klik <strong>Jalankan Analisis</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let files = [];
+let currentMode = 'full';
+let currentLang = 'id';
+let rawResult = '';
+let outputDetailed = false;
+let isStreaming = false;
+
+// ── CHAR COUNTER ──
+document.getElementById('reportText').addEventListener('input', function() {
+  const n = this.value.length;
+  const el = document.getElementById('charCount');
+  const approxTokens = Math.round(n / 4);
+  el.textContent = `${n.toLocaleString()} karakter ≈ ${approxTokens.toLocaleString()} token`;
+  el.style.color = n > 60000 ? 'var(--danger-fg)' : n > 30000 ? 'var(--attention-fg)' : 'var(--fg-subtle)';
+});
+
+// ── FILE HANDLING ──
+function handleFiles(fl) {
+  for (const f of fl) {
+    if (!files.find(x => x.name === f.name)) files.push(f);
+  }
+  renderFileList();
+}
+
+function renderFileList() {
+  const el = document.getElementById('fileList');
+  if (!files.length) { el.innerHTML = ''; return; }
+  el.innerHTML = files.map((f, i) => `
+    <div class="file-row">
+      <span class="file-ico">${fileIcon(f.name)}</span>
+      <span class="file-name">${escHtml(f.name)}</span>
+      <span class="file-size">${formatSize(f.size)}</span>
+      <button class="file-del" onclick="removeFile(${i})">✕ Hapus</button>
+    </div>`).join('');
+}
+
+function removeFile(i) { files.splice(i, 1); renderFileList(); }
+
+function fileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  return { pdf:'📕', docx:'📘', doc:'📘', pptx:'📙', ppt:'📙', xlsx:'📗', xls:'📗', txt:'📄', csv:'📊', md:'📝' }[ext] || '📄';
+}
+
+function formatSize(b) {
+  if (b < 1024) return b + 'B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── DRAG & DROP ──
+const uz = document.getElementById('uploadZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag'); });
+uz.addEventListener('dragleave', () => uz.classList.remove('drag'));
+uz.addEventListener('drop', e => {
+  e.preventDefault(); uz.classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+});
+
+// ── MODE ──
+function selectMode(el, mode) {
+  document.querySelectorAll('.mode-card').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentMode = mode;
+}
+
+// ── LANG ──
+function selectLang(el, lang) {
+  document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentLang = lang;
+}
+
+// ── API TEST ──
+async function testApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { toast('Masukkan API Key terlebih dahulu', 'error'); return; }
+
+  setApiStatus('checking', 'Mengecek...');
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: apiHeaders(key),
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 10, messages: [{ role: 'user', content: 'Hi' }] })
+    });
+    if (r.ok) {
+      setApiStatus('ok', 'Terhubung');
+      document.getElementById('secWarn').style.display = 'flex';
+      toast('✅ API Key valid — siap digunakan', 'success');
+    } else {
+      const err = await r.json();
+      setApiStatus('error', 'Error ' + r.status);
+      toast('API Key error: ' + (err.error?.message || r.status), 'error');
+    }
+  } catch(e) {
+    setApiStatus('error', 'Gagal');
+    toast('Koneksi gagal: ' + e.message, 'error');
+  }
+}
+
+function setApiStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  document.getElementById('statusText').textContent = text;
+  dot.className = 'dot ' + (state === 'ok' ? 'dot-green' : state === 'checking' ? 'dot-yellow' : 'dot-red');
+}
+
+function apiHeaders(key) {
+  return {
+    'Content-Type': 'application/json',
+    'x-api-key': key,
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+}
+
+// ── READ FILE ──
+async function readFileContent(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (['txt', 'csv', 'md', 'json', 'log'].includes(ext)) {
+    try { return await file.text(); } catch(e) { return `[Error membaca ${file.name}: ${e.message}]`; }
+  }
+  if (['pdf','docx','doc','pptx','ppt','xlsx','xls'].includes(ext)) {
+    return [
+      `[FILE: ${file.name} | Ukuran: ${formatSize(file.size)} | Tipe: ${ext.toUpperCase()}]`,
+      `Catatan: File biner tidak dapat dibaca langsung di browser.`,
+      `Untuk hasil optimal, ekstrak teks dari file ini terlebih dahulu dan paste ke kolom teks di bawah.`,
+      `Contoh tools ekstraksi: Adobe Acrobat, LibreOffice, atau paste dari aplikasi sumber.`
+    ].join('\n');
+  }
+  try { return await file.text(); }
+  catch { return `[File: ${file.name} — tidak dapat dibaca]`; }
+}
+
+// ── BUILD SYSTEM PROMPT ──
+function buildSystemPrompt() {
+  const opts = {
+    contradiction: document.getElementById('tog-contradiction').checked,
+    multimonth:    document.getElementById('tog-multimonth').checked,
+    sla:           document.getElementById('tog-sla').checked,
+    cpaste:        document.getElementById('tog-cpaste').checked,
+    rag:           document.getElementById('tog-rag').checked,
+    itil:          document.getElementById('tog-itil').checked,
+  };
+
+  const lang   = currentLang === 'id' ? 'Bahasa Indonesia' : 'English';
+  const dept   = document.getElementById('department').value.trim() || 'CDO - Cloud Delivery & Operations';
+  const period = document.getElementById('reportPeriod').value.trim() || 'tidak disebutkan';
+  const ctx    = document.getElementById('extraCtx').value.trim();
+
+  const activeOpts = [
+    opts.contradiction && '✅ Deteksi kontradiksi: Identifikasi ketidaksesuaian antara narasi/komentar dengan angka/data aktual',
+    opts.multimonth    && '✅ Analisis multi-bulan: Cari pola, tren, dan korelasi lintas periode',
+    opts.sla           && '✅ Konsistensi SLO/SLA: Validasi target kontraktual vs aktual, tandai setiap breach',
+    opts.cpaste        && '✅ Deteksi copy-paste error: Identifikasi komentar/narasi yang disalin dari bulan sebelumnya tanpa diupdate',
+    opts.rag           && '✅ RAG Status: Sertakan tabel status dengan warna Red/Amber/Green untuk setiap area layanan',
+    opts.itil          && '✅ Rekomendasi ITIL v4: Gunakan terminologi dan framework ITIL v4 sesuai implementasi Lintasarta',
+  ].filter(Boolean).join('\n');
+
+  return `Kamu adalah analis senior Cloud Delivery & Operations (CDO) di Lintasarta — perusahaan cloud services terkemuka di Indonesia.
+Tugasmu: menganalisis laporan operasional bulanan CDO secara mendalam dan menghasilkan laporan analisis siap distribusi ke manajemen eksekutif.
+
+KONTEKS ORGANISASI:
+- Departemen: ${dept}
+- Periode Laporan: ${period}
+- Framework: ITIL v4 (Lintasarta implementation)
+- Tooling: ServiceNow / SDP
+- Layanan utama: Private Cloud, Sovereign Cloud, GPU Cloud, Datacenter Colocation
+- Site datacenter: CGK2, CGK3, CGK4, DRC1/DRC2/DRC3
+${ctx ? '- Konteks tambahan: ' + ctx : ''}
+
+MODE ANALISIS: ${getModeDesc()}
+
+OPSI AKTIF:
+${activeOpts || '(tidak ada opsi khusus)'}
+
+INSTRUKSI OUTPUT (dalam ${lang}):
+Hasilkan laporan analisis terstruktur dengan bagian-bagian berikut (sesuai mode yang dipilih):
+
+1. ### 📊 EXECUTIVE DASHBOARD
+   Metrik ringkas: jumlah temuan per severity (🔴 Critical | 🟡 Warning | 🟢 OK | 🔵 Info)
+   Tabel RAG status per area layanan jika opsi RAG aktif.
+
+2. ### ❌ KESALAHAN DATA & NARASI
+   Kontradiksi angka vs narasi, typo, copy-paste error, data hilang, inkonsistensi.
+   Format per temuan: [SEVERITY] | Area | Deskripsi masalah | Rekomendasi perbaikan
+
+3. ### 🚨 ISU KRITIS
+   Masalah yang butuh eskalasi segera. Sertakan: dampak, urgency, dan langkah mitigasi.
+
+4. ### 📈 ANALISIS TREN
+   Pola berulang, eskalasi beban, korelasi variabel (misal: GPU tenant vs power usage).
+
+5. ### 🔮 KORELASI & PREDIKSI
+   Proyeksi berdasarkan tren saat ini. Estimasi risiko ke depan.
+
+6. ### 💡 REKOMENDASI IMPROVEMENT
+   - Quick Wins (< 1 bulan)
+   - Medium-Term (1–3 bulan)
+   - Strategic (3+ bulan)
+
+7. ### 💪 STRENGTHS & WEAKNESSES
+   Apa yang berjalan baik vs area yang perlu perhatian khusus.
+
+8. ### 📋 ACTION PLAN
+   Tabel: | Aksi | Owner | Deadline | Priority | Status |
+
+KETENTUAN FORMAT:
+- Gunakan ### untuk header section
+- Gunakan tabel markdown untuk data struktural
+- Emoji status: 🔴 Critical | 🟡 Warning | 🟢 OK | 🔵 Info
+- Setiap temuan: [Severity] [Area] Deskripsi → Rekomendasi
+- Output harus bisa langsung digunakan sebagai laporan eksekutif
+
+PENTING:
+- Jangan sekadar meringkas — berikan analisis mendalam dengan root cause
+- Identifikasi pola yang tersembunyi dalam data
+- Rekomendasi harus spesifik, actionable, dan measurable
+- Jika ada data yang mencurigakan, tandai dan jelaskan kenapa mencurigakan`;
+}
+
+function getModeDesc() {
+  return ({
+    full:    'ANALISIS PENUH — semua dimensi: kesalahan data, tren, SLA, risiko, rekomendasi, prediksi',
+    errors:  'DETEKSI KESALAHAN — fokus pada kontradiksi data, narasi tidak akurat, copy-paste error, angka tidak konsisten',
+    trend:   'TREND ANALYSIS — fokus pada pola multi-periode, eskalasi, korelasi variabel, proyeksi',
+    sla:     'SLA/KPI REVIEW — fokus pada pemenuhan target SLA, breach SLO, perbandingan aktual vs target kontraktual',
+    risk:    'RISK ASSESSMENT — identifikasi risiko operasional, finansial, reputasi, dan kepatuhan kontrak',
+    action:  'ACTION PLAN — fokus pada rekomendasi konkret, ownership, timeline, dan prioritas tindakan',
+    exec:    'EXECUTIVE SUMMARY — ringkasan singkat untuk manajemen senior, highlight paling kritis saja',
+    predict: 'ANALISIS PREDIKTIF — proyeksi berdasarkan tren, identifikasi potensi masalah mendatang'
+  })[currentMode] || 'ANALISIS PENUH';
+}
+
+// ── RUN ANALYSIS (with streaming) ──
+async function runAnalysis() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { toast('Masukkan API Key Anthropic terlebih dahulu', 'error'); return; }
+
+  const text         = document.getElementById('reportText').value.trim();
+  const customPrompt = document.getElementById('customPrompt').value.trim();
+
+  if (!files.length && !text) {
+    toast('Upload file laporan atau paste teks terlebih dahulu', 'error');
+    return;
+  }
+
+  if (isStreaming) return;
+  isStreaming = true;
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;"></span> Menganalisis...';
+  document.getElementById('exportBar').style.display = 'none';
+
+  // Show loading
+  showLoading();
+
+  try {
+    // Read files
+    let fileContent = '';
+    for (const f of files) {
+      const content = await readFileContent(f);
+      fileContent += `\n\n=== FILE: ${f.name} (${formatSize(f.size)}) ===\n${content}`;
+    }
+
+    const userContent = [
+      fileContent ? 'KONTEN FILE:\n' + fileContent : '',
+      text        ? '\n\nKONTEN TEKS LAPORAN:\n' + text : '',
+      customPrompt? '\n\nINSTRUKSI SPESIFIK DARI PENGGUNA:\n' + customPrompt : '',
+      '\n\nLakukan analisis komprehensif sesuai instruksi sistem. Berikan output terstruktur, mendalam, dan actionable.'
+    ].join('');
+
+    const model    = document.getElementById('modelSelect').value;
+    const maxTok   = currentMode === 'exec' ? 2000 : 8000;
+
+    // Try streaming first, fall back to regular
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { ...apiHeaders(key), 'Accept': 'text/event-stream' },
+      body: JSON.stringify({
+        model, max_tokens: maxTok,
+        stream: true,
+        system: buildSystemPrompt(),
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'API Error ' + resp.status);
+    }
+
+    // Streaming response
+    rawResult = '';
+    showStreamOutput();
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(data);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            rawResult += evt.delta.text;
+            updateStreamOutput(rawResult);
+          }
+        } catch { /* ignore parse errors */ }
+      }
+    }
+
+    finalizeOutput(rawResult);
+    document.getElementById('exportBar').style.display = 'flex';
+    setApiStatus('ok', 'Terhubung');
+    toast('✅ Analisis selesai!', 'success');
+
+  } catch(e) {
+    showError('Gagal menghubungi API: ' + escHtml(e.message));
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    isStreaming = false;
+    btn.disabled = false;
+    btn.innerHTML = '▶ Jalankan Analisis';
+  }
+}
+
+// ── RENDER ──
+let streamEl = null;
+
+function showLoading() {
+  const model = document.getElementById('modelSelect').selectedOptions[0]?.text || '';
+  document.getElementById('outputBody').innerHTML = `
+    <div class="loading-state">
+      <div class="gh-spinner"></div>
+      <div class="loading-label" id="loadStep">Membaca konten laporan...</div>
+      <div class="loading-model text-subtle font-mono" style="font-size:11px">Model: ${escHtml(model)}</div>
+    </div>`;
+
+  const steps = currentLang === 'id'
+    ? ['Membaca konten laporan...','Mendeteksi kontradiksi data...','Menganalisis tren dan pola...','Memvalidasi SLA/SLO...','Menyusun rekomendasi ITIL v4...','Membuat action plan...']
+    : ['Reading report content...','Detecting data contradictions...','Analyzing trends and patterns...','Validating SLA/SLO...','Building ITIL v4 recommendations...','Generating action plan...'];
+  let i = 0;
+  const iv = setInterval(() => {
+    i = (i + 1) % steps.length;
+    const el = document.getElementById('loadStep');
+    if (el) el.textContent = steps[i]; else clearInterval(iv);
+  }, 2200);
+}
+
+function showStreamOutput() {
+  document.getElementById('outputBody').innerHTML = `<div class="result-body md-content" id="streamContent"></div>`;
+  streamEl = document.getElementById('streamContent');
+}
+
+function updateStreamOutput(text) {
+  if (!streamEl) return;
+  streamEl.innerHTML = markdownToHTML(text) + '<span class="stream-cursor"></span>';
+  // Auto-scroll to bottom while streaming
+  const body = document.getElementById('outputBody');
+  if (body.scrollTop + body.clientHeight > body.scrollHeight - 100) {
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
+function finalizeOutput(text) {
+  document.getElementById('outputBody').innerHTML =
+    `<div class="result-body md-content">${markdownToHTML(text)}</div>`;
+}
+
+function showError(msg) {
+  document.getElementById('outputBody').innerHTML = `
+    <div style="padding:24px">
+      <div class="flash flash-error">⚠️ <span>${msg}</span></div>
+    </div>`;
+}
+
+// ── MARKDOWN TO HTML ──
+function markdownToHTML(md) {
+  if (!md) return '';
+
+  // Escape HTML in non-code sections first (we handle code separately)
+  // Process code blocks
+  let html = md.replace(/```[\s\S]*?```/g, m => {
+    const code = m.replace(/^```\w*\n?/, '').replace(/```$/, '');
+    return `<pre style="background:var(--canvas-inset);border:1px solid var(--border-default);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.6;margin:10px 0;color:var(--fg-default)">${escHtml(code)}</pre>`;
+  });
+
+  // Tables (must process before other replacements)
+  html = html.replace(/(\|.+\|\r?\n)+/g, match => {
+    const rows = match.trim().split('\n').filter(r => r.trim());
+    let t = '<div class="md-table-wrap"><table class="md-table">';
+    let isHeader = true;
+    for (const row of rows) {
+      if (/^\|[\s\-:|]+\|$/.test(row.trim())) { isHeader = false; continue; }
+      const cells = row.split('|').map(c => c.trim()).filter((c, i, a) => i > 0 && i < a.length - 1);
+      if (isHeader) {
+        t += '<thead><tr>' + cells.map(c => `<th>${applyInline(c)}</th>`).join('') + '</tr></thead><tbody>';
+        isHeader = false;
+      } else {
+        t += '<tr>' + cells.map(c => `<td>${applyInline(c)}</td>`).join('') + '</tr>';
+      }
+    }
+    t += '</tbody></table></div>';
+    return t;
+  });
+
+  // Headers
+  html = html
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // HR
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Bullet lists
+  html = html.replace(/(^[-*] .+$(\n^[-*] .+$)*)/gm, match => {
+    const items = match.split('\n').filter(Boolean);
+    return '<ul>' + items.map(i => `<li>${applyInline(i.replace(/^[-*] /, ''))}</li>`).join('') + '</ul>';
+  });
+
+  // Numbered lists
+  html = html.replace(/(^\d+\. .+$(\n^\d+\. .+$)*)/gm, match => {
+    const items = match.split('\n').filter(Boolean);
+    return '<ol>' + items.map(i => `<li>${applyInline(i.replace(/^\d+\. /, ''))}</li>`).join('') + '</ol>';
+  });
+
+  // Blockquote
+  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Paragraphs (lines not already wrapped in HTML tags)
+  html = html.split('\n\n').map(chunk => {
+    chunk = chunk.trim();
+    if (!chunk) return '';
+    if (/^</.test(chunk)) return chunk;
+    return `<p>${applyInline(chunk.replace(/\n/g, '<br>'))}</p>`;
+  }).join('\n');
+
+  return html;
+}
+
+function applyInline(text) {
+  return text
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // RAG emojis with badges
+    .replace(/🔴\s*([\w\s]+)?/g, (m, w) => `<span class="rag-red">🔴 ${(w||'Critical').trim()}</span>`)
+    .replace(/🟡\s*([\w\s]+)?/g, (m, w) => `<span class="rag-yellow">🟡 ${(w||'Warning').trim()}</span>`)
+    .replace(/🟢\s*([\w\s]+)?/g, (m, w) => `<span class="rag-green">🟢 ${(w||'OK').trim()}</span>`)
+    .replace(/🔵\s*([\w\s]+)?/g, (m, w) => `<span class="rag-blue">🔵 ${(w||'Info').trim()}</span>`);
+}
+
+// ── EXPORT ──
+function exportMarkdown() {
+  if (!rawResult) return;
+  const blob = new Blob([rawResult], { type: 'text/markdown' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `cdo-analysis-${dateStr()}.md` });
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('📄 File Markdown diunduh', 'success');
+}
+
+function exportText() {
+  if (!rawResult) return;
+  const blob = new Blob([rawResult], { type: 'text/plain' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `cdo-analysis-${dateStr()}.txt` });
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('📝 File teks diunduh', 'success');
+}
+
+async function copyToClipboard() {
+  if (!rawResult) return;
+  try {
+    await navigator.clipboard.writeText(rawResult);
+    toast('📋 Hasil disalin ke clipboard', 'success');
+  } catch(e) {
+    toast('Gagal copy: ' + e.message, 'error');
+  }
+}
+
+function toggleOutputMode() {
+  outputDetailed = !outputDetailed;
+  document.getElementById('toggleViewBtn').textContent = outputDetailed ? 'Tampilan Ringkas' : 'Tampilan Detail';
+  if (rawResult) finalizeOutput(rawResult);
+}
+
+function dateStr() { return new Date().toISOString().split('T')[0]; }
+
+// ── CLEAR ──
+function clearAll() {
+  files = [];
+  rawResult = '';
+  renderFileList();
+  document.getElementById('reportText').value = '';
+  document.getElementById('customPrompt').value = '';
+  document.getElementById('charCount').textContent = '0 karakter';
+  document.getElementById('exportBar').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('outputBody').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">🔬</div>
+      <div class="empty-text">Belum ada analisis</div>
+      <div class="empty-sub">Upload file laporan atau paste konten teks, lalu klik <strong>Jalankan Analisis</strong></div>
+    </div>`;
+}
+
+// ── TOAST ──
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show toast-${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = 'toast'; }, 3500);
+}
+</script>
+
+</body>
+</html>
