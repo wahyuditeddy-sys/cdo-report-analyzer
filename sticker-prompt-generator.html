@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sticker Prompt Generator — AI Platform Ready</title>
+<style>
+  :root {
+    --bg-canvas: #0d1117;
+    --bg-overlay: #161b22;
+    --bg-subtle: #1c2128;
+    --bg-inset: #22272e;
+    --border-default: #30363d;
+    --border-muted: #21262d;
+    --fg-default: #e6edf3;
+    --fg-muted: #7d8590;
+    --fg-subtle: #6e7681;
+    --accent-fg: #58a6ff;
+    --accent-emphasis: #1f6feb;
+    --success-fg: #3fb950;
+    --success-subtle: #1a3a1a;
+    --warning-fg: #d29922;
+    --warning-subtle: #2a1f00;
+    --danger-fg: #f85149;
+    --done-fg: #a371f7;
+    --done-subtle: #1d1035;
+    --pink-fg: #f778ba;
+    --orange-fg: #ffa657;
+    --teal-fg: #39d353;
+    --radius: 6px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg-canvas);
+    color: var(--fg-default);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--bg-overlay);
+    border-bottom: 1px solid var(--border-default);
+    flex-shrink: 0;
+  }
+  .topnav-logo { font-size: 18px; }
+  .topnav-title { font-weight: 600; font-size: 15px; color: var(--fg-default); }
+  .topnav-sub { font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
+  .topnav-badge {
+    margin-left: auto;
+    background: var(--done-subtle);
+    color: var(--done-fg);
+    border: 1px solid var(--done-fg);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .5px;
+  }
+  .market-badge {
+    background: var(--success-subtle);
+    color: var(--success-fg);
+    border: 1px solid var(--success-fg);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--bg-overlay);
+    border-right: 1px solid var(--border-default);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+
+  .sidebar-section {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-muted);
+  }
+  .sidebar-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--fg-subtle);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  label { display: block; font-size: 12px; color: var(--fg-muted); margin-bottom: 4px; margin-top: 10px; }
+  label:first-of-type { margin-top: 0; }
+
+  select, input[type=text], textarea {
+    width: 100%;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius);
+    color: var(--fg-default);
+    font-size: 13px;
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  select:focus, input[type=text]:focus, textarea:focus {
+    border-color: var(--accent-fg);
+    box-shadow: 0 0 0 3px rgba(88,166,255,.1);
+  }
+  textarea { resize: vertical; min-height: 70px; font-family: inherit; line-height: 1.5; }
+
+  /* Platform chips */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .platform-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--bg-inset);
+    transition: all .15s;
+    user-select: none;
+  }
+  .platform-chip:hover { border-color: var(--accent-fg); }
+  .platform-chip.active { border-color: var(--accent-fg); background: rgba(88,166,255,.1); color: var(--accent-fg); }
+  .platform-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Style chips (scrollable row) */
+  .style-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .style-chip {
+    padding: 3px 10px;
+    border: 1px solid var(--border-default);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--bg-inset);
+    transition: all .15s;
+    user-select: none;
+    color: var(--fg-muted);
+  }
+  .style-chip:hover { border-color: var(--accent-fg); color: var(--accent-fg); }
+  .style-chip.active { border-color: var(--done-fg); background: var(--done-subtle); color: var(--done-fg); }
+
+  .btn-generate {
+    width: 100%;
+    padding: 10px;
+    background: var(--accent-emphasis);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .btn-generate:hover { background: #388bfd; }
+  .btn-generate:active { transform: scale(.98); }
+
+  /* ── MAIN PANEL ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-canvas);
+  }
+
+  .main-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 12px 20px 0;
+    border-bottom: 1px solid var(--border-default);
+    flex-shrink: 0;
+    background: var(--bg-overlay);
+  }
+  .tab {
+    padding: 7px 14px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg-muted);
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: all .15s;
+  }
+  .tab:hover { color: var(--fg-default); }
+  .tab.active {
+    color: var(--fg-default);
+    background: var(--bg-canvas);
+    border-color: var(--border-default);
+    border-bottom-color: var(--bg-canvas);
+    margin-bottom: -1px;
+  }
+
+  .tab-content { display: none; flex: 1; overflow: hidden; }
+  .tab-content.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+  /* ── TEMPLATES TAB ── */
+  .templates-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .templates-grid::-webkit-scrollbar { width: 6px; }
+  .templates-grid::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+
+  .template-card {
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+  }
+  .template-card:hover { border-color: var(--accent-fg); box-shadow: 0 0 0 3px rgba(88,166,255,.08); }
+  .template-card.selected { border-color: var(--done-fg); box-shadow: 0 0 0 3px rgba(163,113,247,.12); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .card-emoji { font-size: 24px; line-height: 1; flex-shrink: 0; }
+  .card-title { font-weight: 600; font-size: 13px; color: var(--fg-default); }
+  .card-rank {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .rank-hot { background: rgba(248,81,73,.15); color: var(--danger-fg); }
+  .rank-trending { background: rgba(255,166,87,.15); color: var(--orange-fg); }
+  .rank-rising { background: rgba(63,185,80,.15); color: var(--success-fg); }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .card-tag {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 20px;
+    background: var(--bg-inset);
+    color: var(--fg-muted);
+    border: 1px solid var(--border-muted);
+  }
+  .card-score {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+  .score-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--bg-inset);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .score-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent-emphasis), var(--done-fg));
+    transition: width .4s ease;
+  }
+
+  /* ── OUTPUT TAB ── */
+  .output-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .output-area::-webkit-scrollbar { width: 6px; }
+  .output-area::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+
+  .output-card {
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .output-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-default);
+  }
+  .output-card-title { font-weight: 600; font-size: 13px; flex: 1; }
+  .output-platform-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .badge-mj { background: rgba(247,120,186,.15); color: var(--pink-fg); border: 1px solid var(--pink-fg); }
+  .badge-gemini { background: rgba(88,166,255,.15); color: var(--accent-fg); border: 1px solid var(--accent-fg); }
+  .badge-sd { background: rgba(57,211,83,.15); color: var(--teal-fg); border: 1px solid var(--teal-fg); }
+  .badge-general { background: rgba(163,113,247,.15); color: var(--done-fg); border: 1px solid var(--done-fg); }
+  .badge-flow { background: rgba(255,166,87,.15); color: var(--orange-fg); border: 1px solid var(--orange-fg); }
+
+  .prompt-box {
+    padding: 14px 16px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--fg-default);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt-actions {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border-muted);
+    background: var(--bg-subtle);
+  }
+  .btn-sm {
+    padding: 5px 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-default);
+    background: var(--bg-inset);
+    color: var(--fg-default);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .btn-sm:hover { border-color: var(--accent-fg); color: var(--accent-fg); }
+  .btn-sm.copied { border-color: var(--success-fg); color: var(--success-fg); }
+
+  /* ── TIPS TAB ── */
+  .tips-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+  }
+  .tips-area::-webkit-scrollbar { width: 6px; }
+  .tips-area::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+
+  .tip-section { margin-bottom: 20px; }
+  .tip-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--accent-fg); }
+  .tip-section p, .tip-section li { font-size: 13px; color: var(--fg-muted); line-height: 1.7; }
+  .tip-section ul { padding-left: 20px; }
+  .tip-section li { margin-bottom: 4px; }
+
+  .formula-box {
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--success-fg);
+    margin-top: 8px;
+    line-height: 1.8;
+  }
+
+  .platform-tips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .platform-tip-card {
+    background: var(--bg-inset);
+    border: 1px solid var(--border-muted);
+    border-radius: var(--radius);
+    padding: 12px;
+  }
+  .platform-tip-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .platform-tip-card p { font-size: 11px; color: var(--fg-muted); line-height: 1.6; }
+
+  /* empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--fg-muted);
+    text-align: center;
+    padding: 40px;
+  }
+  .empty-state .icon { font-size: 48px; }
+  .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--fg-default); }
+  .empty-state p { font-size: 13px; max-width: 300px; }
+
+  /* search bar */
+  .search-bar {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-default);
+    background: var(--bg-overlay);
+    flex-shrink: 0;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--bg-inset);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius);
+    color: var(--fg-default);
+    font-size: 13px;
+    padding: 7px 12px 7px 34px;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237d8590' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--accent-fg); }
+
+  /* notification toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-overlay);
+    border: 1px solid var(--success-fg);
+    color: var(--success-fg);
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    animation: fadeIn .2s ease;
+  }
+  .toast.show { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* scrollbar global */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div class="topnav-logo">🎨</div>
+  <div>
+    <div class="topnav-title">Sticker Prompt Generator</div>
+    <div class="topnav-sub">AI-ready templates for Midjourney · Gemini · Flow · Stable Diffusion</div>
+  </div>
+  <span class="market-badge">📈 Market-Research Backed</span>
+  <span class="topnav-badge">25 Templates</span>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Platform -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">🖥️ Platform Target</div>
+      <div class="platform-grid">
+        <div class="platform-chip active" data-platform="midjourney" onclick="selectPlatform(this)">
+          <div class="dot" style="background:#f778ba"></div> Midjourney
+        </div>
+        <div class="platform-chip" data-platform="gemini" onclick="selectPlatform(this)">
+          <div class="dot" style="background:#58a6ff"></div> Gemini
+        </div>
+        <div class="platform-chip" data-platform="flow" onclick="selectPlatform(this)">
+          <div class="dot" style="background:#ffa657"></div> Flow
+        </div>
+        <div class="platform-chip" data-platform="sd" onclick="selectPlatform(this)">
+          <div class="dot" style="background:#39d353"></div> Stable Diff.
+        </div>
+        <div class="platform-chip" data-platform="general" onclick="selectPlatform(this)" style="grid-column: span 2;">
+          <div class="dot" style="background:#a371f7"></div> General (Universal)
+        </div>
+      </div>
+    </div>
+
+    <!-- Art Style -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">🖌️ Art Style Override</div>
+      <div class="style-chips">
+        <div class="style-chip active" data-style="auto" onclick="selectStyle(this)">Auto (Template Default)</div>
+        <div class="style-chip" data-style="kawaii flat" onclick="selectStyle(this)">Kawaii Flat</div>
+        <div class="style-chip" data-style="chibi cartoon" onclick="selectStyle(this)">Chibi</div>
+        <div class="style-chip" data-style="watercolor" onclick="selectStyle(this)">Watercolor</div>
+        <div class="style-chip" data-style="pixel art" onclick="selectStyle(this)">Pixel Art</div>
+        <div class="style-chip" data-style="line art minimalist" onclick="selectStyle(this)">Line Art</div>
+        <div class="style-chip" data-style="retro groovy" onclick="selectStyle(this)">Retro/Y2K</div>
+        <div class="style-chip" data-style="3D puffy glossy" onclick="selectStyle(this)">3D Puffy</div>
+        <div class="style-chip" data-style="dark academia ink sketch" onclick="selectStyle(this)">Dark Ink</div>
+        <div class="style-chip" data-style="pastel soft" onclick="selectStyle(this)">Pastel Soft</div>
+      </div>
+    </div>
+
+    <!-- Customization -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">✏️ Customization</div>
+
+      <label>Custom Subject (optional)</label>
+      <input type="text" id="customSubject" placeholder="e.g. shiba inu, boba tea, moon..." />
+
+      <label>Color Palette Override</label>
+      <select id="colorPalette">
+        <option value="">Auto (Template Default)</option>
+        <option value="pastel pink and lavender">Pastel Pink & Lavender</option>
+        <option value="pastel blue and mint">Pastel Blue & Mint</option>
+        <option value="warm earth tones, terracotta, cream">Warm Earth Tones</option>
+        <option value="dark purple and gold">Dark Purple & Gold</option>
+        <option value="neon cyan and magenta">Neon Cyberpunk</option>
+        <option value="soft sage green and dusty rose">Sage & Dusty Rose</option>
+        <option value="black and white with red accents">Monochrome + Red</option>
+        <option value="rainbow pastel">Rainbow Pastel</option>
+        <option value="batik indigo and warm brown">Batik Traditional</option>
+      </select>
+
+      <label>Mood / Vibe</label>
+      <select id="moodSelect">
+        <option value="">Auto</option>
+        <option value="cute and cheerful">Cute & Cheerful</option>
+        <option value="cozy and warm">Cozy & Warm</option>
+        <option value="mysterious and mystical">Mysterious</option>
+        <option value="bold and energetic">Bold & Energetic</option>
+        <option value="soft and dreamy">Soft & Dreamy</option>
+        <option value="funny and playful">Funny & Playful</option>
+        <option value="elegant and minimal">Elegant & Minimal</option>
+        <option value="nostalgic and retro">Nostalgic & Retro</option>
+      </select>
+
+      <label>Output Format</label>
+      <select id="outputFormat">
+        <option value="single">Single Sticker</option>
+        <option value="sheet">Sticker Sheet (6–9 pcs)</option>
+        <option value="set">Cohesive Set (3–5 variations)</option>
+        <option value="diecut">Die-Cut Ready</option>
+      </select>
+
+      <label>Extra Notes (optional)</label>
+      <textarea id="extraNotes" placeholder="e.g. for WhatsApp sticker pack, kid-friendly, no text..."></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div class="sidebar-section">
+      <button class="btn-generate" onclick="generatePrompts()">
+        ✨ Generate Prompts
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="sidebar-section" style="margin-top: auto;">
+      <div class="sidebar-section-title">📊 Market Score</div>
+      <div id="marketScore" style="font-size: 13px; color: var(--fg-muted);">Select a template to see market potential score.</div>
+    </div>
+
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main">
+
+    <!-- TABS -->
+    <div class="main-tabs" style="background: var(--bg-overlay);">
+      <div class="tab active" onclick="switchTab('templates')">🗂️ Templates (25)</div>
+      <div class="tab" onclick="switchTab('output')">📋 Generated Prompts</div>
+      <div class="tab" onclick="switchTab('tips')">💡 Prompt Tips</div>
+    </div>
+
+    <!-- TEMPLATES TAB -->
+    <div class="tab-content active" id="tab-templates" style="flex-direction: column;">
+      <div class="search-bar">
+        <input class="search-input" type="text" id="searchInput" placeholder="Search templates... (kawaii, food, nature...)" oninput="filterTemplates()" />
+      </div>
+      <div class="templates-grid" id="templatesGrid"></div>
+    </div>
+
+    <!-- OUTPUT TAB -->
+    <div class="tab-content" id="tab-output">
+      <div class="output-area" id="outputArea">
+        <div class="empty-state">
+          <div class="icon">🎨</div>
+          <h3>No prompts generated yet</h3>
+          <p>Select a template from the Templates tab, customize your options, then click Generate Prompts.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPS TAB -->
+    <div class="tab-content" id="tab-tips">
+      <div class="tips-area">
+        <div class="tip-section">
+          <h3>🧪 Universal Prompt Formula</h3>
+          <p>This formula works across all major AI image platforms:</p>
+          <div class="formula-box">[SUBJECT] + [ART STYLE] + [COLOR PALETTE] + [OUTLINE TYPE] + [BACKGROUND] + [FORMAT KEYWORDS]</div>
+          <p style="margin-top:8px;font-size:12px;">Example: <em>"cute boba tea cup with smiling face, kawaii flat design, pastel pink and purple palette, thick black outline, white background, sticker design, die-cut ready, printable"</em></p>
+        </div>
+
+        <div class="tip-section">
+          <h3>🖥️ Platform-Specific Tips</h3>
+          <div class="platform-tips">
+            <div class="platform-tip-card">
+              <h4 style="color:var(--pink-fg)">🎨 Midjourney</h4>
+              <p>Append <code>--niji 6</code> for kawaii/anime style. Use <code>--style raw</code> for cleaner white backgrounds. Add <code>--ar 1:1</code> for square sticker format. Use <code>--q 2</code> for higher quality.</p>
+            </div>
+            <div class="platform-tip-card">
+              <h4 style="color:var(--accent-fg)">🔷 Gemini Imagen</h4>
+              <p>Always include "white background, isolated subject, sticker art" explicitly. Use "vector illustration style" for sharper edges. Avoid complex scenes — one clear subject works best.</p>
+            </div>
+            <div class="platform-tip-card">
+              <h4 style="color:var(--orange-fg)">🌊 Flow</h4>
+              <p>Flow responds well to style references. Include "flat design" or "cartoon illustration" for consistency. Use negative prompts: "no background, no shadow, no gradient background".</p>
+            </div>
+            <div class="platform-tip-card">
+              <h4 style="color:var(--teal-fg)">⚡ Stable Diffusion</h4>
+              <p>Use negative prompt: "background, shadow, realistic, photo, blur". Add LoRA like "sticker design LoRA". Works well with SDXL + VAE. CFG scale 7–9 recommended.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-section">
+          <h3>📦 Sticker Format Keywords</h3>
+          <ul>
+            <li><strong>Die-cut ready:</strong> "die-cut sticker, clean white border, isolated subject, no background"</li>
+            <li><strong>Sticker sheet:</strong> "sticker sheet layout, multiple variations, consistent style, white background"</li>
+            <li><strong>WhatsApp/LINE pack:</strong> "emoji-style, simple flat icon, 512x512, transparent background"</li>
+            <li><strong>Print-on-demand:</strong> "printable sticker design, 300 DPI quality, CMYK color safe, vector-like clarity"</li>
+            <li><strong>Holographic look:</strong> "holographic foil effect, iridescent shimmer, metallic sheen, rainbow highlights"</li>
+          </ul>
+        </div>
+
+        <div class="tip-section">
+          <h3>🏪 Market Timing Tips</h3>
+          <ul>
+            <li>🎃 <strong>Halloween:</strong> Upload by August for Etsy SEO ranking</li>
+            <li>🎄 <strong>Christmas:</strong> Start September, peak October–November</li>
+            <li>💝 <strong>Valentine's:</strong> Upload from December</li>
+            <li>🌙 <strong>Ramadan/Eid:</strong> Start January for Indonesian market</li>
+            <li>📚 <strong>Back-to-school:</strong> July–August spike on planner stickers</li>
+            <li>🌸 <strong>Spring/floral:</strong> February–March upload window</li>
+          </ul>
+        </div>
+
+        <div class="tip-section">
+          <h3>💰 Highest-ROI Categories (2025)</h3>
+          <ul>
+            <li>🥇 <strong>Kawaii Food + Drink</strong> — highest impulse-buy rate on Redbubble</li>
+            <li>🥈 <strong>Planner/Bujo Stickers</strong> — highest repeat-purchase rate on Etsy</li>
+            <li>🥉 <strong>Pet Stickers (dog/cat breeds)</strong> — personalization premium, loyal buyers</li>
+            <li>🏅 <strong>Cottagecore/Botanical</strong> — AI-generatable + broad appeal</li>
+            <li>🏅 <strong>Indonesian Local Culture</strong> — blue ocean on global POD platforms</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Copied to clipboard!</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA: 25 Sticker Templates (Market-Research Backed)
+// ─────────────────────────────────────────────
+const TEMPLATES = [
+  {
+    id: 1,
+    emoji: "🍵",
+    title: "Kawaii Food & Drink",
+    tags: ["kawaii", "food", "boba", "cute"],
+    rank: "hot",
+    rankLabel: "🔥 #1 Best Seller",
+    score: 9.8,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "kawaii flat design",
+    defaultColor: "pastel pink and lilac palette",
+    subject: "cute boba tea cup with smiling face and rosy cheeks",
+    basePrompt: {
+      midjourney: `cute boba tea cup with smiling face and rosy cheeks, kawaii flat design, pastel pink and lilac palette, thick black outline, white background, sticker design, die-cut ready, printable --niji 6 --ar 1:1 --style raw --q 2`,
+      gemini: `A single cute boba tea cup character with a smiling face and rosy cheeks. Kawaii flat illustration style, pastel pink and lilac colors, thick black outline, isolated on pure white background. Sticker art, die-cut ready, printable quality.`,
+      flow: `kawaii boba tea character, cute smiling face, flat design illustration, pastel pink lavender palette, bold black outline, white background, sticker art style, no shadows`,
+      sd: `kawaii boba tea cup sticker, cute smiling face, flat design, pastel pink purple, bold outline, white background, sticker design\nNegative: realistic, photo, blur, background clutter, shadow, gradient`,
+      general: `Cute kawaii boba tea cup character with smiling face, rosy cheeks, pastel pink and lilac colors, thick black outline, kawaii flat illustration style, white background, sticker design, die-cut ready`
+    }
+  },
+  {
+    id: 2,
+    emoji: "📓",
+    title: "Planner / Bujo Stickers",
+    tags: ["planner", "bujo", "journal", "functional"],
+    rank: "hot",
+    rankLabel: "🔥 #2 Repeat Buyer",
+    score: 9.5,
+    platforms: ["etsy", "shopee"],
+    defaultStyle: "clean flat design",
+    defaultColor: "neutral sage, dusty rose, and cream",
+    subject: "cohesive set of planner sticker icons",
+    basePrompt: {
+      midjourney: `cohesive planner sticker set, flat design icons: coffee cup, calendar, checklist, star, bookmark, pencil, all matching style, sage green and dusty rose palette, minimal black outline, white background, sticker sheet layout --ar 3:2 --style raw --q 2`,
+      gemini: `A cohesive set of 9 planner and bullet journal sticker icons arranged on white background: coffee cup, calendar, checklist, star, bookmark, pencil, heart, flower, moon. Flat minimalist design, sage green and dusty rose color palette, thin black outline, printable sticker sheet.`,
+      flow: `planner sticker sheet, flat icon set, bujo stickers, sage green dusty rose cream palette, minimal outline, white background, consistent illustration style, sticker sheet layout`,
+      sd: `planner bujo sticker sheet, flat design icons, sage green dusty rose, minimal outline, white background\nNegative: photo, realistic, 3D, shadow, background`,
+      general: `Cohesive planner bullet journal sticker set with flat design icons (coffee, calendar, checklist, star, bookmark, pencil), sage green and dusty rose color palette, minimal black outline, white background, printable sticker sheet`
+    }
+  },
+  {
+    id: 3,
+    emoji: "🐕",
+    title: "Cute Pet Stickers (Dog & Cat)",
+    tags: ["pet", "dog", "cat", "animal"],
+    rank: "hot",
+    rankLabel: "🔥 #3 High Value",
+    score: 9.4,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "chibi cartoon",
+    defaultColor: "warm orange and cream",
+    subject: "chibi shiba inu sitting with big sparkly eyes",
+    basePrompt: {
+      midjourney: `chibi shiba inu sitting, big sparkly eyes, cute cartoon style, warm orange cream palette, bold black outline, white background, sticker design, die-cut ready --niji 6 --ar 1:1 --q 2`,
+      gemini: `An adorable chibi shiba inu dog sitting with big sparkly eyes and happy expression. Cute cartoon illustration style, warm orange and cream colors, bold black outline, isolated on pure white background. Sticker art, die-cut ready.`,
+      flow: `chibi shiba inu sticker, big sparkly eyes, cute cartoon illustration, warm orange cream colors, bold outline, white background, no shadow`,
+      sd: `chibi shiba inu sticker, cute cartoon, big eyes, warm orange cream, bold black outline, white background\nNegative: realistic, photo, complex background, blur`,
+      general: `Adorable chibi shiba inu sitting with big sparkly eyes, cute cartoon style, warm orange and cream color palette, bold black outline, white background, sticker design`
+    }
+  },
+  {
+    id: 4,
+    emoji: "🍄",
+    title: "Cottagecore & Botanical",
+    tags: ["cottagecore", "botanical", "mushroom", "nature"],
+    rank: "hot",
+    rankLabel: "🔥 Trending",
+    score: 9.2,
+    platforms: ["etsy", "redbubble", "pinterest"],
+    defaultStyle: "soft watercolor",
+    defaultColor: "soft earth tones, moss green and warm cream",
+    subject: "tiny mushroom cottage surrounded by wildflowers and ferns",
+    basePrompt: {
+      midjourney: `tiny mushroom cottage surrounded by wildflowers and ferns, soft watercolor illustration, earthy moss green and warm cream palette, delicate brush strokes, isolated on white, botanical sticker, die-cut ready --ar 1:1 --q 2`,
+      gemini: `A whimsical tiny mushroom house surrounded by wildflowers, ferns, and small woodland plants. Soft watercolor illustration style, earthy moss green and warm cream color palette, gentle brush strokes, isolated on white background. Botanical sticker art, die-cut ready.`,
+      flow: `cottagecore mushroom cottage sticker, watercolor style, wildflowers, earthy green cream palette, soft edges, white background, botanical illustration`,
+      sd: `mushroom cottage botanical sticker, watercolor illustration, moss green cream colors, wildflowers, white background\nNegative: dark, photo, realistic, 3D, heavy outline`,
+      general: `Whimsical tiny mushroom cottage with wildflowers and ferns, soft watercolor style, earthy moss green and warm cream palette, delicate brush strokes, white background, botanical sticker die-cut ready`
+    }
+  },
+  {
+    id: 5,
+    emoji: "🌙",
+    title: "Witchy & Mystical",
+    tags: ["witchy", "moon", "crystal", "mystical"],
+    rank: "trending",
+    rankLabel: "⭐ High Loyalty",
+    score: 9.0,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "mystical flat design",
+    defaultColor: "dark purple and gold",
+    subject: "crescent moon with crystals, stars, and dried herbs",
+    basePrompt: {
+      midjourney: `crescent moon adorned with amethyst crystals, dried lavender sprigs, and tiny stars, mystical flat design, dark purple and gold palette, thin elegant outline, white background, witchy sticker, die-cut ready --ar 1:1 --style raw --q 2`,
+      gemini: `A magical crescent moon decorated with amethyst crystals, dried lavender herbs, and twinkling stars. Mystical flat illustration style, dark purple and gold color palette, elegant thin outline, isolated on white background. Witchy sticker art, die-cut ready.`,
+      flow: `mystical crescent moon sticker, crystals stars herbs, flat design, dark purple gold palette, elegant outline, white background, witchy aesthetic`,
+      sd: `witchy moon crystal sticker, mystical flat design, dark purple gold, crescent moon, stars, white background\nNegative: bright, colorful, photo, realistic, busy background`,
+      general: `Magical crescent moon with amethyst crystals, dried herbs, and stars, mystical flat design style, dark purple and gold palette, elegant thin outline, white background, witchy sticker die-cut ready`
+    }
+  },
+  {
+    id: 6,
+    emoji: "♈",
+    title: "Astrology & Zodiac Signs",
+    tags: ["astrology", "zodiac", "stars", "celestial"],
+    rank: "trending",
+    rankLabel: "⭐ 12x Audience",
+    score: 8.8,
+    platforms: ["etsy", "redbubble", "shopee"],
+    defaultStyle: "celestial flat design",
+    defaultColor: "midnight navy and gold",
+    subject: "Libra zodiac symbol with constellation and floral accents",
+    basePrompt: {
+      midjourney: `Libra zodiac symbol with scales constellation and delicate floral accents, celestial flat design, midnight navy and gold palette, elegant thin outline, white background, astrology sticker --ar 1:1 --style raw --q 2`,
+      gemini: `Libra zodiac symbol featuring scales, constellation pattern, and delicate floral botanical accents. Celestial flat illustration style, midnight navy and gold palette, elegant thin outline, isolated on pure white background. Astrology sticker art.`,
+      flow: `libra zodiac sticker, constellation floral accents, celestial flat design, navy gold palette, elegant outline, white background`,
+      sd: `libra zodiac sticker, scales constellation floral, celestial design, midnight navy gold, white background\nNegative: photo, realistic, dark background, busy`,
+      general: `Libra zodiac with scales, constellation, and floral accents in celestial flat design style, midnight navy and gold palette, elegant outline, white background, astrology sticker`
+    }
+  },
+  {
+    id: 7,
+    emoji: "📼",
+    title: "Retro / Y2K / Vaporwave",
+    tags: ["retro", "y2k", "vaporwave", "90s"],
+    rank: "trending",
+    rankLabel: "⭐ Gen Z Market",
+    score: 8.7,
+    platforms: ["redbubble", "teepublic"],
+    defaultStyle: "retro groovy illustration",
+    defaultColor: "neon pink, electric blue, and purple",
+    subject: "cassette tape with retro sun and star burst",
+    basePrompt: {
+      midjourney: `retro cassette tape with sun starburst and groovy swirls, Y2K vaporwave aesthetic, neon pink electric blue purple palette, bold retro outline, white background, sticker design --ar 1:1 --style raw --q 2`,
+      gemini: `A retro cassette tape decorated with sunburst rays, groovy swirls, and Y2K star elements. Vaporwave retro aesthetic, neon pink, electric blue, and purple color palette, bold decorative outline, isolated on white background. Retro sticker art.`,
+      flow: `retro cassette tape sticker, Y2K vaporwave aesthetic, sunburst swirls, neon pink blue purple, bold outline, white background, groovy illustration`,
+      sd: `Y2K vaporwave cassette sticker, retro aesthetic, neon pink blue purple, sunburst groovy, white background\nNegative: modern, minimal, dark background, realistic`,
+      general: `Retro cassette tape with sunburst and groovy swirls, Y2K vaporwave aesthetic, neon pink, electric blue, and purple palette, bold retro outline, white background, sticker design`
+    }
+  },
+  {
+    id: 8,
+    emoji: "📚",
+    title: "Dark Academia",
+    tags: ["dark academia", "books", "gothic", "literary"],
+    rank: "trending",
+    rankLabel: "⭐ BookTok Viral",
+    score: 8.6,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "ink sketch with sepia tones",
+    defaultColor: "sepia brown, aged cream, and deep green",
+    subject: "stack of antique books with quill pen and inkwell",
+    basePrompt: {
+      midjourney: `stack of antique leather-bound books with quill pen and inkwell, dark academia aesthetic, detailed ink sketch style, sepia brown and aged cream palette, moody illustration, white background, die-cut sticker --ar 1:1 --q 2`,
+      gemini: `Antique leather-bound books stacked with a quill pen and ink bottle. Dark academia aesthetic, detailed ink sketch illustration, sepia brown and aged cream color palette, literary mood, isolated on white background. Die-cut sticker art.`,
+      flow: `dark academia books sticker, antique books quill inkwell, ink sketch style, sepia cream palette, literary aesthetic, white background`,
+      sd: `dark academia book sticker, antique books quill pen, ink sketch, sepia brown cream, white background\nNegative: colorful, cartoon, bright, modern`,
+      general: `Antique books stack with quill pen and inkwell, dark academia aesthetic, ink sketch style, sepia brown and aged cream palette, moody literary mood, white background, sticker design`
+    }
+  },
+  {
+    id: 9,
+    emoji: "🐸",
+    title: "Frog & Goblincore",
+    tags: ["frog", "goblincore", "mushroom", "whimsical"],
+    rank: "trending",
+    rankLabel: "⭐ Cult Niche",
+    score: 8.5,
+    platforms: ["redbubble", "pinterest"],
+    defaultStyle: "whimsical flat design",
+    defaultColor: "mossy green, warm brown, and mustard",
+    subject: "happy frog sitting on a mushroom holding a tiny gem",
+    basePrompt: {
+      midjourney: `happy chubby frog sitting on a red mushroom holding a tiny shiny gem, goblincore whimsical illustration, mossy green warm brown mustard palette, cute bold outline, white background, sticker design, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `A happy chubby frog sitting on a red mushroom cap, holding a tiny sparkling gem. Goblincore whimsical illustration style, mossy green, warm brown, and mustard yellow color palette, cute bold outline, isolated on white background. Sticker art, die-cut ready.`,
+      flow: `goblincore frog on mushroom sticker, tiny gem, whimsical illustration, mossy green brown mustard, cute outline, white background`,
+      sd: `goblincore frog mushroom sticker, happy frog gem, whimsical illustration, green brown, white background\nNegative: realistic, dark, photo, scary`,
+      general: `Happy chubby frog on mushroom holding tiny gem, goblincore whimsical style, mossy green, warm brown, and mustard palette, bold outline, white background, sticker design`
+    }
+  },
+  {
+    id: 10,
+    emoji: "🎮",
+    title: "Gaming & Pixel Art",
+    tags: ["gaming", "pixel art", "retro game", "controller"],
+    rank: "trending",
+    rankLabel: "⭐ Loyal Fans",
+    score: 8.4,
+    platforms: ["redbubble", "teepublic"],
+    defaultStyle: "8-bit pixel art",
+    defaultColor: "classic game palette, vibrant primary colors",
+    subject: "retro game controller with pixel heart icons",
+    basePrompt: {
+      midjourney: `retro game controller with pixel heart and star icons, 8-bit pixel art style, classic game color palette, no anti-aliasing, pixel-perfect rendering, white background, gaming sticker design --ar 1:1 --style raw`,
+      gemini: `Retro video game controller decorated with pixel heart and star icons. 8-bit pixel art style, classic game vibrant color palette, crisp pixel-perfect rendering, isolated on white background. Gaming sticker art.`,
+      flow: `retro gaming controller pixel art sticker, 8-bit style, pixel hearts stars, vibrant game colors, white background, no anti-aliasing`,
+      sd: `pixel art gaming sticker, retro controller, 8-bit style, pixel hearts, bright colors, white background\nNegative: anti-aliasing, smooth, realistic, 3D`,
+      general: `Retro game controller with pixel heart and star icons, 8-bit pixel art style, classic vibrant game color palette, crisp pixel rendering, white background, gaming sticker`
+    }
+  },
+  {
+    id: 11,
+    emoji: "🍎",
+    title: "Teacher & School Life",
+    tags: ["teacher", "school", "education", "pencil"],
+    rank: "rising",
+    rankLabel: "📈 Repeat Buyers",
+    score: 8.3,
+    platforms: ["etsy", "shopee"],
+    defaultStyle: "cute flat design",
+    defaultColor: "apple red, sunshine yellow, and chalk white",
+    subject: "happy apple with a tiny graduation cap and pencil",
+    basePrompt: {
+      midjourney: `happy smiling apple wearing graduation cap holding a pencil, cute flat design, apple red sunshine yellow chalk white palette, bold outline, white background, teacher sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `A happy smiling apple character wearing a tiny graduation cap and holding a pencil. Cute flat illustration style, apple red, sunshine yellow, and chalk white color palette, bold black outline, isolated on white background. Teacher sticker art, die-cut ready.`,
+      flow: `teacher apple graduation cap sticker, cute flat design, red yellow white, bold outline, white background, school theme`,
+      sd: `teacher apple sticker, cute cartoon, graduation cap pencil, red yellow, white background\nNegative: realistic, dark, complex, photo`,
+      general: `Happy smiling apple wearing graduation cap holding pencil, cute flat design, apple red and sunshine yellow palette, bold outline, white background, teacher sticker`
+    }
+  },
+  {
+    id: 12,
+    emoji: "🦋",
+    title: "Nature & Wildlife",
+    tags: ["nature", "butterfly", "animals", "botanical"],
+    rank: "rising",
+    rankLabel: "📈 Broad Appeal",
+    score: 8.0,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "detailed watercolor",
+    defaultColor: "soft blues, violets, and sage green",
+    subject: "delicate butterfly perched on a wildflower sprig",
+    basePrompt: {
+      midjourney: `delicate watercolor butterfly perched on a wildflower sprig with small leaves, soft watercolor illustration, blues violets and sage green palette, no outline, isolated on white, nature sticker, botanical art --ar 1:1 --q 2`,
+      gemini: `A delicate butterfly perched on a wildflower sprig with small leaves. Soft watercolor illustration style, soft blues, violets, and sage green color palette, no heavy outline, natural loose brush strokes, isolated on white background. Nature sticker botanical art.`,
+      flow: `watercolor butterfly on wildflower sticker, soft blues violets sage green, delicate brush strokes, no outline, white background, botanical nature`,
+      sd: `watercolor butterfly wildflower sticker, soft colors blue violet green, botanical illustration, white background\nNegative: heavy outline, cartoon, dark, photo`,
+      general: `Delicate butterfly on wildflower sprig, soft watercolor style, blues, violets, and sage green palette, loose brush strokes, white background, nature botanical sticker`
+    }
+  },
+  {
+    id: 13,
+    emoji: "✨",
+    title: "Mental Health & Affirmations",
+    tags: ["mental health", "motivational", "affirmation", "self-love"],
+    rank: "hot",
+    rankLabel: "🔥 Broad Market",
+    score: 9.1,
+    platforms: ["etsy", "redbubble", "shopee"],
+    defaultStyle: "pastel soft lettering with icon",
+    defaultColor: "soft lavender, warm peach, and cream",
+    subject: "tiny glowing sun with the words 'you are enough'",
+    basePrompt: {
+      midjourney: `cute tiny glowing sun character with handwritten-style text "you are enough", pastel soft illustration, lavender warm peach cream palette, gentle outline, white background, mental health sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `A cute glowing sun character with gentle rays and a happy expression, with handwritten-style text "you are enough" below it. Soft pastel illustration style, lavender, warm peach, and cream color palette, gentle outline, isolated on white background. Mental health affirmation sticker.`,
+      flow: `cute sun affirmation sticker, you are enough, pastel lavender peach cream, soft illustration, handwritten text, white background`,
+      sd: `mental health affirmation sticker, cute sun, "you are enough" text, pastel lavender peach, white background\nNegative: dark, harsh, realistic, scary`,
+      general: `Cute glowing sun with text 'you are enough', pastel soft illustration, lavender, peach, and cream palette, gentle outline, white background, mental health affirmation sticker`
+    }
+  },
+  {
+    id: 14,
+    emoji: "☕",
+    title: "Coffee & Cafe Aesthetic",
+    tags: ["coffee", "cafe", "cozy", "latte"],
+    rank: "rising",
+    rankLabel: "📈 Cozy Trend",
+    score: 7.6,
+    platforms: ["etsy", "redbubble", "shopee"],
+    defaultStyle: "kawaii flat design",
+    defaultColor: "warm coffee brown, cream, and terracotta",
+    subject: "kawaii latte cup with heart latte art and steam",
+    basePrompt: {
+      midjourney: `kawaii latte coffee cup with heart latte art on top and curling steam, cute flat design, warm coffee brown cream terracotta palette, bold black outline, white background, cafe sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `An adorable kawaii latte coffee cup with heart-shaped latte art on top and cute curling steam. Flat kawaii illustration style, warm coffee brown, cream, and terracotta color palette, bold black outline, isolated on white background. Cafe sticker art, die-cut ready.`,
+      flow: `kawaii latte coffee sticker, heart latte art steam, flat design, warm brown cream terracotta, bold outline, white background`,
+      sd: `kawaii coffee latte sticker, heart art steam, flat design, warm brown cream, white background\nNegative: realistic, dark, complex background`,
+      general: `Kawaii latte cup with heart latte art and curling steam, cute flat design, warm coffee brown, cream, and terracotta palette, bold outline, white background, cafe sticker`
+    }
+  },
+  {
+    id: 15,
+    emoji: "🎃",
+    title: "Halloween Seasonal",
+    tags: ["halloween", "seasonal", "pumpkin", "spooky cute"],
+    rank: "hot",
+    rankLabel: "🔥 Q4 Peak",
+    score: 8.2,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "cute spooky flat design",
+    defaultColor: "orange, black, and violet",
+    subject: "cute kawaii jack-o-lantern pumpkin with ghost friends",
+    basePrompt: {
+      midjourney: `cute kawaii jack-o-lantern pumpkin with tiny ghost friends, spooky cute flat design, orange black violet palette, bold outline, white background, Halloween sticker set --niji 6 --ar 1:1 --q 2`,
+      gemini: `An adorable kawaii jack-o-lantern pumpkin with tiny friendly ghost companions. Spooky cute flat illustration style, classic orange, black, and violet color palette, bold black outline, isolated on white background. Halloween sticker set art.`,
+      flow: `halloween cute pumpkin ghost sticker, kawaii spooky, orange black violet, flat design, bold outline, white background`,
+      sd: `kawaii halloween pumpkin sticker, jack-o-lantern cute ghost, orange black violet, white background\nNegative: scary, realistic, dark background, horror`,
+      general: `Cute kawaii jack-o-lantern with tiny ghost friends, spooky cute flat design, orange, black, and violet palette, bold outline, white background, Halloween sticker`
+    }
+  },
+  {
+    id: 16,
+    emoji: "🌸",
+    title: "Valentine & Love",
+    tags: ["valentine", "love", "hearts", "cute"],
+    rank: "hot",
+    rankLabel: "🔥 Seasonal Spike",
+    score: 8.2,
+    platforms: ["etsy", "shopee"],
+    defaultStyle: "kawaii soft illustration",
+    defaultColor: "rose pink, candy red, and soft cream",
+    subject: "kawaii bear holding a heart bouquet",
+    basePrompt: {
+      midjourney: `kawaii bear holding a bouquet of hearts and roses, soft romantic illustration, rose pink candy red cream palette, thick outline, white background, Valentine sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `An adorable kawaii bear character holding a bouquet made of hearts and roses. Soft romantic illustration style, rose pink, candy red, and soft cream color palette, thick black outline, isolated on white background. Valentine sticker art, die-cut ready.`,
+      flow: `kawaii valentine bear sticker, heart bouquet roses, rose pink red cream, soft illustration, thick outline, white background`,
+      sd: `kawaii valentine bear sticker, heart bouquet, pink red cream, cute illustration, white background\nNegative: dark, aggressive, photo, realistic`,
+      general: `Kawaii bear holding heart and rose bouquet, soft romantic illustration, rose pink, candy red, and cream palette, thick outline, white background, Valentine sticker`
+    }
+  },
+  {
+    id: 17,
+    emoji: "🌙",
+    title: "Ramadan & Islamic",
+    tags: ["ramadan", "islamic", "lantern", "crescent"],
+    rank: "rising",
+    rankLabel: "📈 Indonesia Blue Ocean",
+    score: 8.0,
+    platforms: ["shopee", "tokopedia", "line"],
+    defaultStyle: "ornate flat design",
+    defaultColor: "teal, gold, and warm sand",
+    subject: "ornate Ramadan lantern (fanoos) with crescent moon and stars",
+    basePrompt: {
+      midjourney: `ornate Ramadan lantern fanoos with crescent moon and sparkling stars, detailed flat design, teal gold warm sand palette, geometric ornamental accents, white background, Ramadan sticker, die-cut ready --ar 1:1 --style raw --q 2`,
+      gemini: `A beautifully ornate Ramadan lantern (fanoos/pelita) surrounded by crescent moon and sparkling stars with geometric decorative accents. Detailed flat illustration style, teal, gold, and warm sand color palette, isolated on white background. Ramadan Eid sticker art, die-cut ready.`,
+      flow: `ramadan lantern crescent moon sticker, ornate flat design, teal gold warm sand, geometric accents, white background`,
+      sd: `ramadan eid lantern sticker, crescent moon stars, ornate flat design, teal gold, white background\nNegative: dark, realistic, complex background, shadowy`,
+      general: `Ornate Ramadan lantern with crescent moon and stars, detailed flat design, teal, gold, and warm sand palette, geometric ornamental accents, white background, Ramadan sticker`
+    }
+  },
+  {
+    id: 18,
+    emoji: "🏺",
+    title: "Indonesian Local Culture",
+    tags: ["indonesia", "batik", "wayang", "local"],
+    rank: "rising",
+    rankLabel: "📈 Blue Ocean Global",
+    score: 7.2,
+    platforms: ["shopee", "etsy", "redbubble"],
+    defaultStyle: "modern flat design with traditional motifs",
+    defaultColor: "batik indigo, warm brown, and turmeric gold",
+    subject: "cute wayang puppet character in modern kawaii style",
+    basePrompt: {
+      midjourney: `cute kawaii-style wayang puppet character with traditional Indonesian batik pattern clothing, modern flat design, indigo warm brown turmeric gold palette, bold black outline, white background, Indonesian cultural sticker --niji 6 --ar 1:1`,
+      gemini: `An adorable kawaii-styled wayang (shadow puppet) character dressed in traditional Indonesian batik pattern clothing. Modern flat illustration style with traditional Indonesian motifs, indigo, warm brown, and turmeric gold color palette, bold black outline, isolated on white background. Indonesian cultural sticker art.`,
+      flow: `kawaii wayang puppet sticker, Indonesian batik costume, modern flat design, indigo brown gold, traditional motifs, white background`,
+      sd: `kawaii wayang indonesian sticker, batik costume, flat design, indigo brown gold, white background\nNegative: photo, realistic, dark background`,
+      general: `Cute kawaii wayang puppet with batik pattern clothing, modern flat design with traditional Indonesian motifs, indigo, warm brown, and turmeric gold palette, bold outline, white background`
+    }
+  },
+  {
+    id: 19,
+    emoji: "🌿",
+    title: "Plant Parent & Houseplants",
+    tags: ["plant", "succulent", "monstera", "green"],
+    rank: "rising",
+    rankLabel: "📈 Millennial/GenZ",
+    score: 7.5,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "flat design illustration",
+    defaultColor: "various greens, terracotta pot, and cream",
+    subject: "cute potted monstera plant with smiley face",
+    basePrompt: {
+      midjourney: `cute potted monstera plant with tiny smiley face and heart-shaped leaves, flat design illustration, various lush greens terracotta pot cream palette, bold outline, white background, plant sticker, die-cut ready --ar 1:1 --niji 6`,
+      gemini: `An adorable potted monstera deliciosa plant with a tiny smiley face on the pot and lush heart-shaped leaves. Flat illustration style, various lush greens, terracotta pot, and cream color palette, bold black outline, isolated on white background. Plant parent sticker art, die-cut ready.`,
+      flow: `cute potted monstera plant sticker, smiley pot, flat design, lush greens terracotta cream, bold outline, white background`,
+      sd: `plant parent monstera sticker, cute potted plant, flat design, greens terracotta, white background\nNegative: realistic, photo, dark background, complex`,
+      general: `Cute potted monstera with smiley pot face, flat design illustration, lush greens and terracotta palette, bold outline, white background, plant parent sticker`
+    }
+  },
+  {
+    id: 20,
+    emoji: "🚀",
+    title: "Space & Galaxy",
+    tags: ["space", "galaxy", "planet", "astronaut"],
+    rank: "rising",
+    rankLabel: "📈 Steady Demand",
+    score: 6.9,
+    platforms: ["redbubble", "teepublic"],
+    defaultStyle: "cute flat space illustration",
+    defaultColor: "deep space navy, purple, and star gold",
+    subject: "tiny cute astronaut floating with planet and stars",
+    basePrompt: {
+      midjourney: `tiny cute astronaut floating in space surrounded by colorful planets and twinkling stars, kawaii flat design, deep navy purple star gold palette, bold outline, white background, space sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `A tiny cute astronaut character floating peacefully in space, surrounded by colorful planets and twinkling stars. Kawaii flat illustration style, deep space navy, purple, and star gold color palette, bold black outline, isolated on white background. Space sticker art, die-cut ready.`,
+      flow: `cute astronaut space sticker, floating planets stars, kawaii flat design, navy purple gold, bold outline, white background`,
+      sd: `cute astronaut space sticker, planets stars, kawaii flat, navy purple gold, white background\nNegative: dark background, realistic, photo, complex`,
+      general: `Tiny cute astronaut floating with colorful planets and stars, kawaii flat design, deep navy, purple, and star gold palette, bold outline, white background, space sticker`
+    }
+  },
+  {
+    id: 21,
+    emoji: "💪",
+    title: "Self-Love & Feminist",
+    tags: ["feminist", "empowerment", "self-love", "girlboss"],
+    rank: "rising",
+    rankLabel: "📈 Identity-Driven",
+    score: 7.9,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "bold retro flat design",
+    defaultColor: "bold pink, cream, and soft red",
+    subject: "girl flexing with stars and 'strong' text",
+    basePrompt: {
+      midjourney: `cute girl character flexing muscle arm with surrounding stars and bold retro text "STRONG", feminist empowerment illustration, bold pink cream soft red palette, retro font style, white background, sticker design --niji 6 --ar 1:1`,
+      gemini: `A cute cartoon girl character flexing her arm muscle surrounded by stars, with bold retro lettering "STRONG". Feminist empowerment illustration style, bold pink, cream, and soft red color palette, retro design, isolated on white background. Empowerment sticker art.`,
+      flow: `feminist empowerment sticker, cute girl flexing stars, bold pink cream red, retro flat design, white background`,
+      sd: `feminist strong sticker, girl flexing stars, bold pink, retro flat design, white background\nNegative: dark, scary, realistic, complex`,
+      general: `Cute girl flexing with stars and 'STRONG' retro text, feminist empowerment flat design, bold pink, cream, and soft red palette, retro style, white background sticker`
+    }
+  },
+  {
+    id: 22,
+    emoji: "🌈",
+    title: "Pride & LGBTQ+",
+    tags: ["pride", "lgbtq", "rainbow", "inclusive"],
+    rank: "rising",
+    rankLabel: "📈 Community Loyal",
+    score: 7.5,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "bright flat design",
+    defaultColor: "rainbow pride colors, vibrant and joyful",
+    subject: "cute rainbow cloud with smiley face and hearts",
+    basePrompt: {
+      midjourney: `cute rainbow cloud character with smiley face and colorful hearts falling around it, bright flat design, full rainbow pride color palette, bold outline, white background, pride sticker, die-cut ready --niji 6 --ar 1:1`,
+      gemini: `An adorable rainbow cloud character with a happy smiley face and colorful hearts floating around it. Bright flat illustration style, full rainbow pride colors, bold black outline, isolated on white background. Pride celebration sticker art, die-cut ready.`,
+      flow: `pride rainbow cloud sticker, smiley face hearts, bright flat design, rainbow colors, bold outline, white background`,
+      sd: `pride rainbow cloud sticker, cute smiley hearts, flat design, rainbow colors, white background\nNegative: dark, dull, realistic, photo`,
+      general: `Cute rainbow cloud with smiley face and colorful hearts, bright flat design, full rainbow pride palette, bold outline, white background, pride sticker`
+    }
+  },
+  {
+    id: 23,
+    emoji: "✈️",
+    title: "Travel & Destination",
+    tags: ["travel", "destination", "landmark", "adventure"],
+    rank: "rising",
+    rankLabel: "📈 Luggage Deco",
+    score: 7.7,
+    platforms: ["etsy", "redbubble"],
+    defaultStyle: "vintage travel poster illustration",
+    defaultColor: "warm vintage palette, mustard, rust, and teal",
+    subject: "vintage-style Bali temple sticker with tropical frame",
+    basePrompt: {
+      midjourney: `vintage travel sticker of Balinese temple with tropical palm leaves and flowers frame, retro travel poster illustration style, warm mustard rust teal palette, aged texture, white background, die-cut sticker --ar 1:1 --style raw`,
+      gemini: `A vintage-style travel sticker featuring a Balinese temple surrounded by a tropical frame of palm leaves and flowers. Retro travel poster illustration style, warm mustard, rust, and teal color palette, aged texture aesthetic, isolated on white background. Die-cut sticker art.`,
+      flow: `vintage bali temple travel sticker, tropical palm frame, retro poster style, mustard rust teal, aged texture, white background`,
+      sd: `vintage travel sticker balinese temple, tropical frame, retro poster, warm mustard teal, white background\nNegative: modern, photo, realistic, dark`,
+      general: `Vintage Bali temple travel sticker with tropical palm frame, retro travel poster style, warm mustard, rust, and teal palette, aged texture, white background`
+    }
+  },
+  {
+    id: 24,
+    emoji: "🧸",
+    title: "Chibi Anime Characters",
+    tags: ["chibi", "anime", "character", "original"],
+    rank: "trending",
+    rankLabel: "⭐ Anime Fans",
+    score: 8.1,
+    platforms: ["redbubble", "shopee", "line"],
+    defaultStyle: "chibi anime style",
+    defaultColor: "soft anime palette, pink lavender and white",
+    subject: "original chibi girl in school uniform with cat ears",
+    basePrompt: {
+      midjourney: `original chibi anime girl in Japanese school uniform with cute cat ears and big sparkly eyes, chibi anime style, soft pink lavender white palette, clean bold outline, white background, anime sticker, die-cut ready --niji 6 --ar 1:1 --q 2`,
+      gemini: `An original chibi-style anime girl character in a Japanese school uniform with cute cat ears and big sparkly eyes. Chibi anime illustration style, soft pink, lavender, and white color palette, clean bold outline, isolated on white background. Anime sticker art, die-cut ready.`,
+      flow: `chibi anime girl sticker, school uniform cat ears, soft pink lavender white, clean outline, white background, anime style`,
+      sd: `chibi anime girl sticker, school uniform cat ears, soft pink lavender, clean outline, white background\nNegative: realistic, photo, adult content, dark`,
+      general: `Original chibi anime girl in school uniform with cat ears and sparkly eyes, chibi anime style, soft pink lavender and white palette, clean bold outline, white background, anime sticker`
+    }
+  },
+  {
+    id: 25,
+    emoji: "🍵",
+    title: "LINE Sticker Pack (Indonesian)",
+    tags: ["line sticker", "whatsapp", "emoji", "indonesian"],
+    rank: "rising",
+    rankLabel: "📈 Indonesian Market",
+    score: 7.8,
+    platforms: ["line", "whatsapp"],
+    defaultStyle: "simple flat icon",
+    defaultColor: "bright friendly colors",
+    subject: "set of Indonesian expression emojis: seneng, sedih, ngantuk, semangat",
+    basePrompt: {
+      midjourney: `set of 4 cute Indonesian expression emoji stickers: happy (seneng), sad (sedih), sleepy (ngantuk), enthusiastic (semangat), simple flat icon design, bright friendly colors, bold outline, white background, WhatsApp LINE sticker pack style --niji 6 --ar 2:2`,
+      gemini: `A set of 4 cute emoji-style stickers showing Indonesian daily expressions: happy/seneng, sad/sedih, sleepy/ngantuk, and enthusiastic/semangat. Simple flat icon illustration style, bright friendly color palette, bold black outline, each isolated on white background. WhatsApp LINE sticker pack design, 512x512 format ready.`,
+      flow: `indonesian expression emoji stickers, 4 pack, flat icon design, bright colors, bold outline, white background, line sticker style`,
+      sd: `indonesian emoji sticker pack, expressions happy sad sleepy, simple flat icon, bright colors, white background\nNegative: complex, realistic, dark, photo`,
+      general: `Set of 4 cute Indonesian expression emoji stickers (seneng, sedih, ngantuk, semangat), simple flat icon style, bright friendly colors, bold outline, white background, LINE/WhatsApp sticker pack ready`
+    }
+  }
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let selectedTemplate = null;
+let selectedPlatform = 'midjourney';
+let selectedStyle = 'auto';
+let generatedPrompts = [];
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  renderTemplates(TEMPLATES);
+});
+
+// ─────────────────────────────────────────────
+// RENDER TEMPLATES
+// ─────────────────────────────────────────────
+function renderTemplates(templates) {
+  const grid = document.getElementById('templatesGrid');
+  grid.innerHTML = '';
+
+  if (templates.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--fg-muted)">No templates found. Try a different search.</div>';
+    return;
+  }
+
+  templates.forEach(t => {
+    const card = document.createElement('div');
+    card.className = `template-card ${selectedTemplate?.id === t.id ? 'selected' : ''}`;
+    card.onclick = () => selectTemplate(t, card);
+
+    const rankClass = { hot: 'rank-hot', trending: 'rank-trending', rising: 'rank-rising' }[t.rank] || 'rank-rising';
+    const scoreWidth = Math.round((t.score / 10) * 100);
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-emoji">${t.emoji}</div>
+        <div style="flex:1">
+          <div class="card-title">${t.title}</div>
+          <div style="font-size:10px;color:var(--fg-muted);margin-top:2px">${t.platforms.map(p => p).join(' · ')}</div>
+        </div>
+        <div class="card-rank ${rankClass}">${t.rankLabel}</div>
+      </div>
+      <div class="card-tags">
+        ${t.tags.map(tag => `<span class="card-tag">${tag}</span>`).join('')}
+      </div>
+      <div class="card-score">
+        <span style="font-size:10px;color:var(--fg-muted);min-width:70px">Market: ${t.score}/10</span>
+        <div class="score-bar"><div class="score-fill" style="width:${scoreWidth}%"></div></div>
+        <span style="font-size:10px;font-weight:600;color:var(--accent-fg)">${t.score}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────
+// SELECT TEMPLATE
+// ─────────────────────────────────────────────
+function selectTemplate(template, cardEl) {
+  selectedTemplate = template;
+
+  // Update card UI
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+
+  // Update market score sidebar
+  document.getElementById('marketScore').innerHTML = `
+    <div style="font-weight:600;color:var(--fg-default);margin-bottom:4px">${template.emoji} ${template.title}</div>
+    <div style="margin-bottom:6px">Score: <strong style="color:var(--accent-fg)">${template.score}/10</strong></div>
+    <div style="font-size:11px;line-height:1.7;">
+      Best on: <span style="color:var(--success-fg)">${template.platforms.join(', ')}</span><br/>
+      Style: ${template.defaultStyle}<br/>
+      Colors: ${template.defaultColor}
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// PLATFORM SELECTION
+// ─────────────────────────────────────────────
+function selectPlatform(el) {
+  document.querySelectorAll('.platform-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedPlatform = el.dataset.platform;
+}
+
+// ─────────────────────────────────────────────
+// STYLE SELECTION
+// ─────────────────────────────────────────────
+function selectStyle(el) {
+  document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedStyle = el.dataset.style;
+}
+
+// ─────────────────────────────────────────────
+// SWITCH TAB
+// ─────────────────────────────────────────────
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['templates','output','tips'][i] === tabName);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+// FILTER TEMPLATES
+// ─────────────────────────────────────────────
+function filterTemplates() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered = TEMPLATES.filter(t =>
+    t.title.toLowerCase().includes(query) ||
+    t.tags.some(tag => tag.toLowerCase().includes(query))
+  );
+  renderTemplates(filtered);
+}
+
+// ─────────────────────────────────────────────
+// GENERATE PROMPTS
+// ─────────────────────────────────────────────
+function generatePrompts() {
+  if (!selectedTemplate) {
+    showToast('⚠️ Please select a template first!', 'warning');
+    return;
+  }
+
+  const customSubject = document.getElementById('customSubject').value.trim();
+  const colorPalette = document.getElementById('colorPalette').value;
+  const mood = document.getElementById('moodSelect').value;
+  const outputFormat = document.getElementById('outputFormat').value;
+  const extraNotes = document.getElementById('extraNotes').value.trim();
+
+  const formatKeywords = {
+    single: 'single sticker, die-cut ready',
+    sheet: 'sticker sheet layout, 6-9 pieces, consistent style',
+    set: 'cohesive sticker set, 3-5 variations, matching style',
+    diecut: 'die-cut sticker, clean white border, isolated subject'
+  };
+
+  const formatKw = formatKeywords[outputFormat];
+  const t = selectedTemplate;
+
+  const outputArea = document.getElementById('outputArea');
+  outputArea.innerHTML = '';
+
+  // Determine which platforms to generate for
+  const platforms = selectedPlatform === 'general'
+    ? ['general']
+    : [selectedPlatform];
+
+  // Build all platform cards
+  const allPlatforms = ['midjourney','gemini','flow','sd','general'];
+  const generateFor = selectedPlatform === 'general' ? allPlatforms : [selectedPlatform];
+
+  generateFor.forEach(platform => {
+    let basePrompt = t.basePrompt[platform] || t.basePrompt['general'];
+
+    // Apply custom subject
+    if (customSubject) {
+      const originalSubject = t.subject;
+      basePrompt = basePrompt.replace(new RegExp(escapeRegex(originalSubject), 'gi'), customSubject);
+    }
+
+    // Apply style override
+    if (selectedStyle !== 'auto') {
+      basePrompt = applyStyleOverride(basePrompt, t.defaultStyle, selectedStyle, platform);
+    }
+
+    // Apply color override
+    if (colorPalette) {
+      basePrompt = applyColorOverride(basePrompt, t.defaultColor, colorPalette, platform);
+    }
+
+    // Apply mood
+    if (mood) {
+      if (!basePrompt.includes(mood)) {
+        basePrompt = insertAfterSubject(basePrompt, `, ${mood} mood`, platform);
+      }
+    }
+
+    // Apply format
+    basePrompt = appendFormatKeywords(basePrompt, formatKw, platform);
+
+    // Apply extra notes
+    if (extraNotes) {
+      basePrompt = appendExtraNotes(basePrompt, extraNotes, platform);
+    }
+
+    const card = buildOutputCard(platform, t, basePrompt);
+    outputArea.appendChild(card);
+  });
+
+  // Switch to output tab
+  switchTab('output');
+  showToast('✅ Prompts generated successfully!');
+}
+
+// ─────────────────────────────────────────────
+// BUILD OUTPUT CARD
+// ─────────────────────────────────────────────
+function buildOutputCard(platform, template, prompt) {
+  const platformInfo = {
+    midjourney: { label: 'Midjourney', badgeClass: 'badge-mj', icon: '🎨' },
+    gemini: { label: 'Gemini Imagen', badgeClass: 'badge-gemini', icon: '🔷' },
+    flow: { label: 'Flow', badgeClass: 'badge-flow', icon: '🌊' },
+    sd: { label: 'Stable Diffusion', badgeClass: 'badge-sd', icon: '⚡' },
+    general: { label: 'Universal', badgeClass: 'badge-general', icon: '✨' }
+  };
+
+  const info = platformInfo[platform];
+  const card = document.createElement('div');
+  card.className = 'output-card';
+
+  card.innerHTML = `
+    <div class="output-card-header">
+      <div style="font-size:18px">${template.emoji}</div>
+      <div class="output-card-title">${template.title}</div>
+      <span class="output-platform-badge ${info.badgeClass}">${info.icon} ${info.label}</span>
+    </div>
+    <div class="prompt-box" id="prompt-${platform}-${template.id}">${prompt}</div>
+    <div class="prompt-actions">
+      <button class="btn-sm" onclick="copyPrompt('prompt-${platform}-${template.id}', this)">📋 Copy Prompt</button>
+      <button class="btn-sm" onclick="copyPromptClean('prompt-${platform}-${template.id}', this)">📄 Copy Clean</button>
+    </div>
+  `;
+
+  return card;
+}
+
+// ─────────────────────────────────────────────
+// COPY FUNCTIONS
+// ─────────────────────────────────────────────
+function copyPrompt(elementId, btn) {
+  const text = document.getElementById(elementId).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy Prompt';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function copyPromptClean(elementId, btn) {
+  let text = document.getElementById(elementId).innerText;
+  // Remove Midjourney params for clean version
+  text = text.replace(/--\w+\s+[\w.]+/g, '').replace(/--\w+/g, '').trim();
+  // Remove negative prompt block for clean version
+  text = text.split('\nNegative:')[0].trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📄 Copy Clean';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ─────────────────────────────────────────────
+// PROMPT MANIPULATION HELPERS
+// ─────────────────────────────────────────────
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function applyStyleOverride(prompt, oldStyle, newStyle, platform) {
+  if (platform === 'midjourney' || platform === 'flow' || platform === 'general') {
+    return prompt.replace(new RegExp(escapeRegex(oldStyle), 'gi'), newStyle);
+  }
+  return prompt;
+}
+
+function applyColorOverride(prompt, oldColor, newColor, platform) {
+  return prompt.replace(new RegExp(escapeRegex(oldColor), 'gi'), newColor);
+}
+
+function insertAfterSubject(prompt, insertion, platform) {
+  const commaIdx = prompt.indexOf(',');
+  if (commaIdx > -1) {
+    return prompt.slice(0, commaIdx) + insertion + prompt.slice(commaIdx);
+  }
+  return prompt + insertion;
+}
+
+function appendFormatKeywords(prompt, formatKw, platform) {
+  if (platform === 'midjourney') {
+    // Insert before -- params
+    const paramIdx = prompt.indexOf(' --');
+    if (paramIdx > -1) {
+      return prompt.slice(0, paramIdx) + `, ${formatKw}` + prompt.slice(paramIdx);
+    }
+  } else if (platform === 'sd') {
+    const negIdx = prompt.indexOf('\nNegative:');
+    if (negIdx > -1) {
+      return prompt.slice(0, negIdx) + `, ${formatKw}` + prompt.slice(negIdx);
+    }
+  }
+  return prompt + `, ${formatKw}`;
+}
+
+function appendExtraNotes(prompt, notes, platform) {
+  if (platform === 'midjourney') {
+    const paramIdx = prompt.indexOf(' --');
+    if (paramIdx > -1) {
+      return prompt.slice(0, paramIdx) + `. ${notes}` + prompt.slice(paramIdx);
+    }
+  } else if (platform === 'sd') {
+    const negIdx = prompt.indexOf('\nNegative:');
+    if (negIdx > -1) {
+      return prompt.slice(0, negIdx) + `. ${notes}` + prompt.slice(negIdx);
+    }
+  }
+  return prompt + `. ${notes}`;
+}
+
+// ─────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.borderColor = type === 'warning' ? 'var(--warning-fg)' : 'var(--success-fg)';
+  toast.style.color = type === 'warning' ? 'var(--warning-fg)' : 'var(--success-fg)';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
