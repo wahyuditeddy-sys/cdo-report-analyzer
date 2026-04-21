@@ -890,6 +890,104 @@ body{
   flex-shrink:0;
 }
 
+/* ── FORMAT TOGGLE ── */
+.format-toggle{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-bottom:10px;
+}
+.fmt-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:var(--rad);
+  padding:9px 6px;
+  cursor:pointer;
+  text-align:center;
+  color:var(--txt2);
+  font-size:11px;
+  font-weight:500;
+  transition:var(--trans);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.fmt-btn .fmt-ic{font-size:20px}
+.fmt-btn:hover{border-color:var(--ac);color:var(--txt)}
+.fmt-btn.active{
+  background:linear-gradient(135deg,rgba(201,63,255,.15),rgba(0,255,221,.08));
+  border-color:var(--ac);
+  color:var(--ac);
+  box-shadow:var(--glow-ac);
+}
+
+/* ── GRID LAYOUT BUTTONS ── */
+.grid-options{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:5px;
+  margin-bottom:8px;
+}
+.grid-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:var(--rad);
+  padding:7px 4px;
+  cursor:pointer;
+  text-align:center;
+  font-size:10px;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--txt2);
+  transition:var(--trans);
+  line-height:1.3;
+}
+.grid-btn .grid-label{
+  font-size:11px;
+  font-weight:700;
+  display:block;
+  color:var(--txt);
+}
+.grid-btn .grid-count{
+  font-size:9px;
+  color:var(--txt3);
+}
+.grid-btn:hover{border-color:var(--cy);color:var(--cy)}
+.grid-btn:hover .grid-label{color:var(--cy)}
+.grid-btn.active{
+  background:rgba(0,255,221,.08);
+  border-color:var(--cy);
+}
+.grid-btn.active .grid-label{color:var(--cy)}
+.grid-btn.active .grid-count{color:var(--cy2)}
+
+/* ── ICON COUNT BUTTONS ── */
+.count-options{
+  display:flex;flex-wrap:wrap;gap:5px;
+}
+.cnt-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:var(--rad);
+  padding:5px 12px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--txt2);
+  transition:var(--trans);
+  flex:1;
+  text-align:center;
+  min-width:38px;
+}
+.cnt-btn:hover{border-color:var(--ye);color:var(--ye)}
+.cnt-btn.active{
+  background:rgba(255,214,0,.12);
+  border-color:var(--ye);
+  color:var(--ye);
+}
+
+/* ── SHEET PANEL (hidden when single) ── */
+.sheet-panel{display:none}
+.sheet-panel.visible{display:block}
+
 /* ── MOMENT HIGHLIGHT ── */
 .moment-section-title{
   font-size:9px;
@@ -1038,6 +1136,60 @@ body{
       </div>
     </div>
 
+    <!-- STICKER FORMAT -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Sticker Format</div>
+      <div class="format-toggle">
+        <button class="fmt-btn active" data-fmt="single" onclick="S.setFormat('single')">
+          <span class="fmt-ic">🏷️</span>
+          <span>Single Icon</span>
+        </button>
+        <button class="fmt-btn" data-fmt="sheet" onclick="S.setFormat('sheet')">
+          <span class="fmt-ic">📋</span>
+          <span>Sheet Pack</span>
+        </button>
+      </div>
+
+      <div class="sheet-panel" id="sheetPanel">
+        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;">Grid Layout</div>
+        <div class="grid-options">
+          <button class="grid-btn" data-grid="6x4" data-count="24" onclick="S.setGrid('6x4',24)">
+            <span class="grid-label">6×4</span>
+            <span class="grid-count">(24)</span>
+          </button>
+          <button class="grid-btn" data-grid="4x4" data-count="16" onclick="S.setGrid('4x4',16)">
+            <span class="grid-label">4×4</span>
+            <span class="grid-count">(16)</span>
+          </button>
+          <button class="grid-btn" data-grid="5x5" data-count="25" onclick="S.setGrid('5x5',25)">
+            <span class="grid-label">5×5</span>
+            <span class="grid-count">(25)</span>
+          </button>
+          <button class="grid-btn" data-grid="8x4" data-count="32" onclick="S.setGrid('8x4',32)">
+            <span class="grid-label">8×4</span>
+            <span class="grid-count">(32)</span>
+          </button>
+          <button class="grid-btn" data-grid="6x6" data-count="36" onclick="S.setGrid('6x6',36)">
+            <span class="grid-label">6×6</span>
+            <span class="grid-count">(36)</span>
+          </button>
+          <button class="grid-btn active" data-grid="custom" data-count="0" onclick="S.setGrid('custom',0)">
+            <span class="grid-label">Custom</span>
+            <span class="grid-count">free</span>
+          </button>
+        </div>
+
+        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;">Icon Count</div>
+        <div class="count-options">
+          <button class="cnt-btn" data-cnt="16" onclick="S.setCount(16)">16</button>
+          <button class="cnt-btn active" data-cnt="24" onclick="S.setCount(24)">24</button>
+          <button class="cnt-btn" data-cnt="25" onclick="S.setCount(25)">25</button>
+          <button class="cnt-btn" data-cnt="32" onclick="S.setCount(32)">32</button>
+          <button class="cnt-btn" data-cnt="36" onclick="S.setCount(36)">36</button>
+        </div>
+      </div>
+    </div>
+
     <!-- VARIATION MODE -->
     <div class="sidebar-section">
       <div class="sidebar-title">Variation Mode</div>
@@ -1103,6 +1255,7 @@ body{
       <span class="stat-chip">Category: <span class="sc-val" id="scCat">dark_kawaii</span></span>
       <span class="stat-chip">Cut: <span class="sc-val" id="scCut">die-cut</span></span>
       <span class="stat-chip">Finish: <span class="sc-val" id="scFinish">glossy</span></span>
+      <span class="stat-chip">Format: <span class="sc-val" id="scFormat">Single</span></span>
       <span class="stat-chip">Vars: <span class="sc-val" id="scVars">0</span> generated</span>
     </div>
 
@@ -1665,6 +1818,9 @@ const S={
   varCount:0,
   catQuery:'',
   activeMonth:'all',
+  stickerFormat:'single',
+  gridLayout:'custom',
+  iconCount:24,
 
   init(){
     this.renderCats();
@@ -1701,6 +1857,25 @@ const S={
   setFinish(v){this.finish=v;this.updateStats()},
   setSize(v){this.sizePreset=v;this.updateStats()},
   setOutline(v){this.outlineStyle=v;this.updateStats()},
+
+  setFormat(f){
+    this.stickerFormat=f;
+    document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.toggle('active',b.dataset.fmt===f));
+    const panel=document.getElementById('sheetPanel');
+    if(panel) panel.classList.toggle('visible',f==='sheet');
+    this.updateStats();
+  },
+
+  setGrid(g,count){
+    this.gridLayout=g;
+    if(count>0)this.setCount(count);
+    document.querySelectorAll('.grid-btn').forEach(b=>b.classList.toggle('active',b.dataset.grid===g));
+  },
+
+  setCount(n){
+    this.iconCount=n;
+    document.querySelectorAll('.cnt-btn').forEach(b=>b.classList.toggle('active',+b.dataset.cnt===n));
+  },
 
   setVarMode(v){
     this.varMode=v;
@@ -1747,6 +1922,9 @@ const S={
     if(scCat)scCat.textContent=this.cat;
     if(scCut)scCut.textContent=TECH_LABELS.cut[this.cutType]||this.cutType;
     if(scFinish)scFinish.textContent=TECH_LABELS.finish[this.finish]||this.finish;
+    const scFormat=document.getElementById('scFormat');
+    if(scFormat)scFormat.textContent=this.stickerFormat==='sheet'
+      ?`Sheet ${this.gridLayout!=='custom'?this.gridLayout:''} ${this.iconCount}icons`:'Single';
     if(scVars)scVars.textContent=this.varCount;
   },
 
@@ -1755,7 +1933,10 @@ const S={
     const f=TECH_LABELS.finish[this.finish];
     const sz=TECH_LABELS.size[this.sizePreset];
     const o=TECH_LABELS.outline[this.outlineStyle];
-    return{cut:c,finish:f,size:sz,outline:o};
+    const isSheet=this.stickerFormat==='sheet';
+    const grid=isSheet&&this.gridLayout!=='custom'?this.gridLayout:null;
+    const cnt=isSheet?this.iconCount:1;
+    return{cut:c,finish:f,size:sz,outline:o,isSheet,grid,iconCount:cnt};
   },
 
   getModsStr(){
@@ -1768,8 +1949,11 @@ const S={
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
     const modStr=mods?`, ${mods}`:'';
-    const ar=this.sizePreset==='line370'?'--ar 37:32':this.sizePreset==='wa512'?'--ar 1:1':'--ar 1:1';
-    return `${c.t.toLowerCase()} sticker, ${c.core}${modStr}, ${tb.outline}, isolated on transparent background, ${tb.finish}, ${tb.size}, ${tb.cut}${extra?', '+extra:''}
+    const ar=this.sizePreset==='line370'?'--ar 37:32':tb.isSheet?'--ar 4:3':'--ar 1:1';
+    const sheetStr=tb.isSheet
+      ?`, sticker sheet${tb.grid?' '+tb.grid+' grid':''}${tb.iconCount>1?', '+tb.iconCount+' icons':''}, uniform size, evenly spaced, kiss-cut sheet`
+      :'';
+    return `${c.t.toLowerCase()} ${tb.isSheet?'sticker sheet':'sticker'}, ${c.core}${modStr}, ${tb.outline}, isolated on transparent background, ${tb.finish}, ${tb.size}, ${tb.cut}${sheetStr}${extra?', '+extra:''}
 
 --ar ${ar.replace('--ar ','')} --v 7 --niji 6 --stylize 850 --q 2 --style raw --no text, watermark, border, background`;
   },
@@ -1779,11 +1963,15 @@ const S={
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
     const plat=PLATFORMS[this.platform];
+    const formatLine=tb.isSheet
+      ?`Sheet Pack — Grid ${tb.grid||'custom'}${tb.iconCount>1?', '+tb.iconCount+' icons':''}`
+      :'Single Icon';
     return `━━ STICKER PROMPT — ${c.t.toUpperCase()} ━━
 
 📌 KATEGORI    : ${c.t}
 🎨 STYLE       : ${c.sub}
-🖼️ FORMAT      : ${tb.size}, ${tb.cut}
+🖼️ FORMAT      : ${formatLine}
+📐 UKURAN      : ${tb.size}, ${tb.cut}
 ✨ FINISH      : ${tb.finish}
 🖊️ OUTLINE     : ${tb.outline}
 📦 PLATFORM    : ${plat.name}
@@ -1791,7 +1979,7 @@ ${extra?'🔄 VARIASI     : '+extra+'\n':''}
 ━━ DESKRIPSI VISUAL ━━
 
 ${c.core}${mods?'\nModifier: '+mods:''}.
-Karakter utama terisolasi di latar transparan.
+${tb.isSheet?`Buat ${tb.iconCount} ikon berbeda dalam satu sheet grid ${tb.grid||''}.\nSetiap ikon berdiri sendiri, ukuran seragam, spasi merata.`:'Karakter tunggal terisolasi di latar transparan.'}
 Warna: ${c.keywords.slice(0,4).join(', ')}.
 Gaya: chibi, illustrasi digital, detail medium.
 
@@ -1803,11 +1991,11 @@ ${c.keywords.join(' | ')}
 
 ${c.neg}
 
-━━ PLATFORM SPEC ━━
+━━ SPESIFIKASI TEKNIS ━━
 
 Ukuran: ${tb.size}
 Format: PNG transparan, 300 DPI
-Jenis potong: ${tb.cut}
+${tb.isSheet?'Layout: Sheet '+tb.grid+' | '+tb.iconCount+' icons | kiss-cut':'Jenis: Single die-cut'}
 Finishing: ${tb.finish}`;
   },
 
@@ -1815,37 +2003,48 @@ Finishing: ${tb.finish}`;
     const c=cat||CATS.find(x=>x.id===this.cat);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid, ${tb.iconCount} icons uniform, kiss-cut sheet layout`:'';
+    const canvasSize=tb.isSheet
+      ?(tb.grid==='8x4'?'2048x1024':tb.grid==='6x4'?'1536x1024':tb.grid==='6x6'?'1536x1536':'1024x1024')
+      :(this.sizePreset==='line370'?'370x320':this.sizePreset==='wa512'?'512x512':'1024x1024');
     return `POSITIVE:
-${c.core}${mods?', '+mods:''}, ${tb.outline}, transparent background, isolated artwork, sticker design, ${tb.finish}, digital illustration, clean lineart, flat color, high detail, ${tb.size}${extra?', '+extra:''}
+${c.core}${mods?', '+mods:''}, ${tb.outline}, transparent background, ${tb.isSheet?'sticker sheet design, multiple icons, evenly spaced':'isolated artwork, sticker design'}, ${tb.finish}, digital illustration, clean lineart, flat color, high detail, ${tb.size}${sheetStr}${extra?', '+extra:''}
 
 NEGATIVE:
-${c.neg}, complex background, shadow, gradient background, low quality, blurry, extra limbs, mutation
+${c.neg}, complex background, shadow, gradient background, low quality, blurry, extra limbs, mutation${tb.isSheet?'':', multiple characters'}
 
-Settings: Steps 30, CFG 7.5, Sampler DPM++ 2M Karras, Size ${this.sizePreset==='line370'?'370x320':this.sizePreset==='wa512'?'512x512':'1024x1024'}`;
+Settings: Steps 30, CFG 7.5, Sampler DPM++ 2M Karras, Size ${canvasSize}`;
   },
 
   buildGemini(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
-    return `Create a high-quality sticker illustration of ${c.t.toLowerCase()}.
+    const sheetInstr=tb.isSheet?`
+This is a STICKER SHEET design:
+• Grid layout: ${tb.grid||'custom'} arrangement
+• Total icons: ${tb.iconCount} unique icons
+• Each icon must be the same size and evenly spaced
+• All icons share the same art style and color palette
+• Arrange icons neatly across the sheet with equal padding`:'';
+    return `Create a high-quality ${tb.isSheet?'sticker sheet':'sticker illustration'} of ${c.t.toLowerCase()}.
 
 The design should feature: ${c.core}${mods?', with '+mods:''}. Use a kawaii digital illustration style with clean linework and vibrant colors.
-
+${sheetInstr}
 STICKER SPECIFICATIONS:
+• Format: ${tb.isSheet?'Sheet Pack — '+tb.grid+' grid, '+tb.iconCount+' icons':'Single Icon'}
 • Outline style: ${tb.outline}
 • Background: fully transparent (PNG)
 • Finish type: ${tb.finish}
-• Cut format: ${tb.cut}
+• Cut format: ${tb.isSheet?'kiss-cut sheet':tb.cut}
 • Canvas size: ${tb.size}
 • Platform: ${PLATFORMS[this.platform].name}
 ${extra?'• Variation: '+extra:''}
-
 IMPORTANT RULES:
-1. The character must be completely isolated with a 100% transparent background
-2. No shadows, gradients, or background elements behind the character
-3. The ${tb.outline} must cleanly follow the exact silhouette of the character
-4. All fine details must remain crisp and clear at sticker print size
+1. ${tb.isSheet?'All '+tb.iconCount+' icons must be fully isolated on transparent background':'Character must be completely isolated with 100% transparent background'}
+2. No shadows, gradients, or background elements
+3. ${tb.outline} must cleanly follow every silhouette
+4. All fine details must remain crisp at sticker print size
 5. Do not include any text, watermarks, or border frames
 
 Style references: ${c.keywords.slice(0,5).join(', ')}.
@@ -1856,8 +2055,12 @@ Color palette: cheerful, saturated, print-optimized.`;
     const c=cat||CATS.find(x=>x.id===this.cat);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid layout, ${tb.iconCount} icons, uniform size, evenly spaced`:'';
+    const canvas=tb.isSheet
+      ?(tb.grid==='8x4'?'2048×1024':tb.grid==='6x4'?'1536×1024':tb.grid==='6x6'?'1536×1536':'1024×1024')
+      :(this.sizePreset==='line370'?'370×320':this.sizePreset==='wa512'?'512×512':'1024×1024');
     return `POSITIVE PROMPT:
-${c.core}${mods?', '+mods:''}, ${tb.outline}, sticker artwork, transparent background, isolated character, ${tb.finish}, digital art, clean illustration, vibrant colors${extra?', '+extra:''}
+${c.core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet, multiple icons, evenly arranged':'isolated sticker artwork'}, transparent background, ${tb.finish}, digital art, clean illustration, vibrant colors${sheetStr}${extra?', '+extra:''}
 
 NEGATIVE PROMPT:
 ${c.neg}, background, shadow, low quality, blurry, extra fingers, deformed, ugly, bad anatomy, text, watermark
@@ -1866,7 +2069,8 @@ Flow Settings:
 • Steps: 30
 • CFG Scale: 7.5
 • Sampler: DPM++ 2M Karras
-• Canvas: ${this.sizePreset==='line370'?'370×320px':this.sizePreset==='wa512'?'512×512px':'1024×1024px'}
+• Canvas: ${canvas}px
+• Format: ${tb.isSheet?'Sheet '+tb.grid+' | '+tb.iconCount+' icons | kiss-cut':'Single die-cut'}
 • Model: Anything V5 / DreamShaper / Counterfeit-V30`;
   },
 
@@ -1874,10 +2078,15 @@ Flow Settings:
     const c=cat||CATS.find(x=>x.id===this.cat);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
-    return `${c.core}${mods?', '+mods:''}, ${tb.outline}, sticker design, transparent background, isolated artwork, ${tb.finish}, clean digital illustration, chibi kawaii style${extra?', '+extra:''}
+    const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid, ${tb.iconCount} icons, uniform size`:'';
+    const canvas=tb.isSheet
+      ?(tb.grid==='8x4'?'2048×1024':tb.grid==='6x4'?'1536×1024':tb.grid==='6x6'?'1536×1536':'1024×1024')
+      :(this.sizePreset==='line370'?'370×320':this.sizePreset==='wa512'?'512×512':'1024×1024');
+    return `${c.core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet design, '+tb.iconCount+' icons on sheet, '+tb.grid+' grid layout':'sticker design, isolated artwork'}, transparent background, ${tb.finish}, clean digital illustration, chibi kawaii style${sheetStr}${extra?', '+extra:''}
 
 Recommended Model: Anime Pastel Dream / AlbedoBase XL / DreamShaper v7
-Canvas Size: ${this.sizePreset==='line370'?'370×320':this.sizePreset==='wa512'?'512×512':'1024×1024'}px
+Canvas Size: ${canvas}px
+Format: ${tb.isSheet?'Sheet Pack — Grid '+tb.grid+' | '+tb.iconCount+' icons | kiss-cut':'Single icon | '+tb.cut}
 Negative: ${c.neg}
 
 Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
