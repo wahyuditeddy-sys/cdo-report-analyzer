@@ -829,6 +829,79 @@ body{
   gap:8px;
   flex-shrink:0;
 }
+
+/* ── DEMAND BADGES ── */
+.demand-badge{
+  font-size:8px;
+  font-weight:700;
+  letter-spacing:.5px;
+  border-radius:6px;
+  padding:1px 5px;
+  flex-shrink:0;
+  font-family:'JetBrains Mono',monospace;
+  text-transform:uppercase;
+}
+.demand-hi{background:rgba(255,60,60,.18);color:#ff6b6b;border:1px solid rgba(255,60,60,.3)}
+.demand-md{background:rgba(255,214,0,.15);color:var(--ye);border:1px solid rgba(255,214,0,.25)}
+.demand-lo{background:rgba(96,96,120,.3);color:var(--txt3);border:1px solid var(--brd)}
+
+/* ── MONTH FILTER ── */
+.month-filter{
+  display:flex;flex-wrap:wrap;gap:3px;
+  margin-bottom:8px;
+}
+.month-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:6px;
+  padding:3px 7px;
+  font-size:9px;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--txt3);
+  cursor:pointer;
+  transition:var(--trans);
+  letter-spacing:.3px;
+}
+.month-btn:hover{border-color:var(--cy);color:var(--cy)}
+.month-btn.active{
+  background:rgba(0,255,221,.1);
+  border-color:var(--cy);
+  color:var(--cy);
+}
+
+/* ── CAT BTN WITH DEMAND ── */
+.cat-btn{
+  position:relative;
+}
+.cat-btn-inner{
+  display:flex;align-items:center;gap:5px;flex:1;overflow:hidden;
+}
+.cat-btn-name{
+  font-size:10px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  flex:1;
+}
+.cat-month-tag{
+  font-size:8px;
+  color:var(--txt3);
+  font-family:'JetBrains Mono',monospace;
+  flex-shrink:0;
+}
+
+/* ── MOMENT HIGHLIGHT ── */
+.moment-section-title{
+  font-size:9px;
+  color:var(--txt3);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  padding:4px 0 2px;
+  font-family:'JetBrains Mono',monospace;
+  border-top:1px solid var(--brd);
+  margin-top:4px;
+  grid-column:1/-1;
+}
 </style>
 </head>
 <body>
@@ -843,9 +916,9 @@ body{
     </div>
   </div>
   <div class="header-right">
-    <span class="badge">45 Categories</span>
+    <span class="badge">57 Categories</span>
     <span class="badge">6 Engines</span>
-    <span class="badge v">v5.0</span>
+    <span class="badge v">v5.1</span>
   </div>
 </header>
 
@@ -897,6 +970,22 @@ body{
     <div class="sidebar-section">
       <div class="sidebar-title">Category</div>
       <input type="text" class="cat-search" id="catSearch" placeholder="🔍 Search category..." oninput="S.filterCats(this.value)">
+      <div class="month-filter" id="monthFilter">
+        <button class="month-btn active" data-month="all" onclick="S.filterByMonth('all')">All</button>
+        <button class="month-btn" data-month="1" onclick="S.filterByMonth('1')">Jan</button>
+        <button class="month-btn" data-month="2" onclick="S.filterByMonth('2')">Feb</button>
+        <button class="month-btn" data-month="3" onclick="S.filterByMonth('3')">Mar</button>
+        <button class="month-btn" data-month="4" onclick="S.filterByMonth('4')">Apr</button>
+        <button class="month-btn" data-month="5" onclick="S.filterByMonth('5')">May</button>
+        <button class="month-btn" data-month="6" onclick="S.filterByMonth('6')">Jun</button>
+        <button class="month-btn" data-month="7" onclick="S.filterByMonth('7')">Jul</button>
+        <button class="month-btn" data-month="8" onclick="S.filterByMonth('8')">Aug</button>
+        <button class="month-btn" data-month="9" onclick="S.filterByMonth('9')">Sep</button>
+        <button class="month-btn" data-month="10" onclick="S.filterByMonth('10')">Oct</button>
+        <button class="month-btn" data-month="11" onclick="S.filterByMonth('11')">Nov</button>
+        <button class="month-btn" data-month="12" onclick="S.filterByMonth('12')">Dec</button>
+        <button class="month-btn" data-month="0" onclick="S.filterByMonth('0')">Ever</button>
+      </div>
       <div class="cat-grid" id="catGrid"></div>
     </div>
 
@@ -1058,24 +1147,26 @@ body{
 
 <script>
 // ══════════════════════════════════════════════════
-// CATEGORY DATA — 45 categories
+// CATEGORY DATA — 57 categories
+// month: [1-12] = Jan-Dec, 0 = evergreen
+// demand: 'hi' | 'md' | 'lo'
 // ══════════════════════════════════════════════════
 const CATS = [
-  {id:'dark_kawaii',i:'🖤',t:'Dark Kawaii',sub:'Gothic cute with dark aesthetic',
+  {id:'dark_kawaii',i:'🖤',t:'Dark Kawaii',sub:'Gothic cute with dark aesthetic',month:0,demand:'md',
    core:'gothic cute character, pastel goth palette, big shiny eyes, melancholic expression',
    keywords:['pastel goth','gothic kawaii','dark cute','sad eyes','moon motif','bat wings','coffin','spiderweb'],
    neg:'ugly, deformed, text, watermark, realistic',
    seoBase:'dark kawaii sticker gothic cute pastel goth aesthetic',
    vars:['holding skull','moon crown','bat wings outfit','coffin phone','spider friend','dark bouquet','cemetery tea','broken heart']},
 
-  {id:'food_cute',i:'🍰',t:'Food Cute',sub:'Adorable kawaii food characters',
+  {id:'food_cute',i:'🍰',t:'Food Cute',sub:'Adorable kawaii food characters',month:0,demand:'hi',
    core:'kawaii food character with cute face, chibi style, pastel colors, happy expression',
    keywords:['kawaii food','chibi','pastel','boba tea','sushi face','ramen bowl','donut character','macaron'],
    neg:'realistic food, ugly, deformed, text, watermark',
    seoBase:'kawaii food sticker cute chibi pastel food character',
    vars:['boba tea','sushi roll','ramen bowl','donut','macaron','ice cream','pizza slice','strawberry cake']},
 
-  {id:'cottagecore_frog',i:'🐸',t:'Cottagecore Frog',sub:'Cozy frog in nature aesthetic',
+  {id:'cottagecore_frog',i:'🐸',t:'Cottagecore Frog',sub:'Cozy frog in nature aesthetic',month:0,demand:'md',
    core:'cute frog character, cottagecore aesthetic, mushroom and flower setting, watercolor style',
    keywords:['frog sticker','cottagecore','mushroom','wildflower','cozy','forest','mossy','vintage botanical'],
    neg:'ugly, scary, realistic, text, watermark',
@@ -1089,7 +1180,7 @@ const CATS = [
    seoBase:'batik fusion sticker Indonesian traditional pattern kawaii',
    vars:['parang motif','mega mendung','kawung circle','truntum flower','sidomukti','sekar jagad','ceplok','sogan palette']},
 
-  {id:'islamic_art',i:'☪️',t:'Islamic Art',sub:'Geometric Islamic pattern stickers',
+  {id:'islamic_art',i:'☪️',t:'Islamic Art',sub:'Geometric Islamic pattern stickers',month:0,demand:'md',
    core:'Islamic geometric art, arabesque pattern, star polygon, mosque silhouette, calligraphy element',
    keywords:['Islamic art','arabesque','geometric','mosque','crescent','star polygon','calligraphy','Ramadan'],
    neg:'figurative, face, person, ugly, text, watermark',
@@ -1124,12 +1215,12 @@ const CATS = [
    seoBase:'kpop korean sticker idol aesthetic cute fan art',
    vars:['light stick wave','fan cheer','bias heart','idol outfit','hanbok character','comeback poster','fan letter','concert glow']},
 
-  {id:'ramadan_eid',i:'🌙',t:'Ramadan & Eid',sub:'Islamic celebration stickers',
-   core:'Ramadan crescent lantern character, Eid celebration kawaii, Islamic festive aesthetic, warm golden palette',
-   keywords:['Ramadan','Eid Mubarak','lantern','crescent','mosque','ketupat','kurma','takbir'],
+  {id:'ramadan_eid',i:'🌙',t:'Ramadan & Eid Fitri',sub:'Islamic celebration stickers',month:3,demand:'hi',
+   core:'Ramadan crescent lantern character, Eid Fitri Lebaran celebration kawaii, Islamic festive aesthetic, warm golden palette, ketupat opor ayam',
+   keywords:['Ramadan','Eid Mubarak','Idul Fitri','Lebaran','lantern','crescent','mosque','ketupat','kurma','takbir','fanous'],
    neg:'figurative prophet, text inside design, watermark',
-   seoBase:'Ramadan Eid sticker Islamic celebration kawaii lantern',
-   vars:['fanous lantern','ketupat pattern','crescent star','mosque silhouette','dates palm','Ramadan calendar','Eid card','iftar feast']},
+   seoBase:'Ramadan Eid Fitri Lebaran sticker Islamic celebration kawaii lantern ketupat',
+   vars:['fanous lantern','ketupat pattern','crescent star','mosque silhouette','dates palm','Ramadan calendar','Eid card','iftar feast','baju koko character','hamper lebaran','angpao eid','open house family']},
 
   {id:'line_expression',i:'💬',t:'LINE Expression',sub:'Chat sticker emotions 370×320',
    core:'LINE messenger expression sticker, single emotion character, bold outline, white background, 370x320 canvas',
@@ -1243,14 +1334,14 @@ const CATS = [
    seoBase:'motivational quote sticker aesthetic hand lettered inspirational',
    vars:['you got this','be kind','dream big','stay weird','positive vibes','breathe','choose joy','shine bright']},
 
-  {id:'halloween_spooky',i:'🎃',t:'Halloween Spooky',sub:'Cute spooky halloween stickers',
+  {id:'halloween_spooky',i:'🎃',t:'Halloween Spooky',sub:'Cute spooky halloween stickers',month:10,demand:'hi',
    core:'cute halloween character, kawaii spooky aesthetic, jack-o-lantern ghost witch, pastel halloween palette',
    keywords:['halloween sticker','spooky kawaii','ghost','pumpkin','witch','bat','skeleton','candy corn'],
    neg:'scary horror, gore, ugly, realistic, text, watermark',
    seoBase:'halloween spooky sticker kawaii cute ghost pumpkin',
    vars:['kawaii ghost','pumpkin face','bat wings','witch brew','candy bucket','black cat','skeleton dance','haunted house mini']},
 
-  {id:'christmas_holiday',i:'🎄',t:'Christmas Holiday',sub:'Festive holiday christmas stickers',
+  {id:'christmas_holiday',i:'🎄',t:'Christmas Holiday',sub:'Festive holiday christmas stickers',month:12,demand:'hi',
    core:'cute christmas character, holiday kawaii, santa reindeer snowman, festive red green gold palette',
    keywords:['christmas sticker','holiday kawaii','santa','snowman','reindeer','ornament','candy cane','gift'],
    neg:'ugly, scary, text, watermark',
@@ -1362,12 +1453,98 @@ const CATS = [
    seoBase:'neon cyberpunk sticker futuristic glitch synthwave neon',
    vars:['neon samurai','cyber cat','glitch face','circuit board','neon skyline','hologram girl','data stream','neural link']},
 
-  {id:'bear_characters',i:'🐻',t:'Bear Characters',sub:'Various bear themed kawaii stickers',
+  {id:'bear_characters',i:'🐻',t:'Bear Characters',sub:'Various bear themed kawaii stickers',month:0,demand:'md',
    core:'kawaii bear character, various bear themed expressions, rounded plump design, pastel bear palette',
    keywords:['bear sticker','kawaii bear','panda','polar bear','brown bear','teddy bear','bear chibi'],
    neg:'scary bear, realistic, ugly, text, watermark',
    seoBase:'bear sticker kawaii chibi panda polar brown teddy',
    vars:['panda munch','polar explorer','brown bear hug','honey bee bear','teddy care bear','bear in sweater','sleepy bear','bear picnic']},
+
+  // ── NEW MOMENT CATEGORIES ──────────────────────
+
+  {id:'idul_adha',i:'🐑',t:'Idul Adha / Qurban',sub:'Eid al-Adha Islamic sacrifice celebration',month:6,demand:'hi',
+   core:'Idul Adha celebration kawaii character, qurban sacrifice aesthetic, cute sapi kambing cow sheep chibi, takbir Allahu Akbar festive mood, warm golden green palette, family gathering Eid',
+   keywords:['Idul Adha','Qurban','Eid al-Adha','sapi kawaii','kambing chibi','takbir','hewan qurban','masjid','family celebration','Islamic festive','kurban'],
+   neg:'figurative prophet, gore, blood, realistic slaughter, text inside, watermark',
+   seoBase:'Idul Adha Qurban sticker kawaii Eid al-Adha Islamic celebration kambing sapi',
+   vars:['kawaii kambing/sheep chibi','cute sapi/cow waving','mosque silhouette crescent','family shalat ied','takbiran lantern parade','daging qurban gift bag','anak baju muslim baru','masjid golden dome','sembako hamper eid','ketupat idul adha','tumbuhan kurma dates','crescent moon star gold']},
+
+  {id:'indonesia_17agustus',i:'🇮🇩',t:'17 Agustus Indonesia',sub:'Indonesian Independence Day stickers',month:8,demand:'hi',
+   core:'Indonesian Independence Day kawaii character, 17 Agustus patriotic aesthetic, merah putih red white palette, Garuda Pancasila motif, pelajar bela negara chibi',
+   keywords:['17 Agustus','Indonesia Independence','merah putih','Garuda','Pancasila','kemerdekaan','HUT RI','perjuangan','bendera Indonesia'],
+   neg:'colonial imagery, ugly, deformed, text, watermark',
+   seoBase:'17 Agustus Indonesia Independence Day sticker kawaii merah putih patriotic',
+   vars:['bendera merah putih wave','Garuda Pancasila chibi','paskibraka character','lomba karung race','lomba makan kerupuk','tumpeng nasi kuning','anak pahlawan hero chibi','veteran salute','peta Indonesia outline','kue ulang tahun HUT RI','parade kemerdekaan','traditional games agustusan']},
+
+  {id:'imlek_cny',i:'🧧',t:'Imlek / Chinese New Year',sub:'Chinese New Year festive stickers',month:1,demand:'hi',
+   core:'Chinese New Year kawaii character, Imlek festive aesthetic, red gold angpao lantern, zodiac animal chibi, prosperity celebration',
+   keywords:['Imlek','Chinese New Year','angpao','lantern','lion dance','barongsai','shio','red envelope','gong xi','prosperity'],
+   neg:'ugly, deformed, negative symbols, text, watermark',
+   seoBase:'Imlek Chinese New Year sticker kawaii angpao lantern barongsai prosperity',
+   vars:['angpao red envelope','barongsai lion dance','zodiac shio animal','red lantern pair','peach blossom tree','gold ingot yuan bao','firework burst','dumpling jiaozi','fortune cat maneki','mandarin orange','spring scroll couplet','family reunion dinner']},
+
+  {id:'graduation',i:'🎓',t:'Graduation / Wisuda',sub:'Academic graduation celebration stickers',month:5,demand:'md',
+   core:'graduation kawaii chibi character, academic celebration aesthetic, toga mortarboard cap diploma scroll, confetti celebration, proud achievement mood',
+   keywords:['graduation sticker','wisuda','toga','diploma','academic','commencement','scholar','cap gown','achievement'],
+   neg:'sad, failing, ugly, deformed, text, watermark',
+   seoBase:'graduation wisuda sticker kawaii toga diploma academic celebration',
+   vars:['toga cap throw','diploma scroll','confetti burst','proud graduate','family hug grad','cum laude medal','photo with parents','classmates group','future bright','book tower grad','university gate','graduation cake']},
+
+  {id:'back_to_school',i:'🎒',t:'Back to School',sub:'New school year preparation stickers',month:7,demand:'hi',
+   core:'back to school kawaii character, school supply aesthetic, colorful stationery pencil ruler backpack notebook chibi, excited first day mood',
+   keywords:['back to school','school sticker','pencil case','backpack','notebook','stationery','first day','student kawaii','school supply'],
+   neg:'boring, ugly, deformed, text, watermark',
+   seoBase:'back to school sticker kawaii student backpack stationery preparation',
+   vars:['backpack ready','pencil case open','new notebook','ruler character','scissors craft','apple teacher','first day excited','lunch box kawaii','school bus wave','crayon set','eraser friend','timetable planner']},
+
+  {id:'earth_day',i:'🌍',t:'Earth Day',sub:'Environmental awareness April 22 stickers',month:4,demand:'hi',
+   core:'Earth Day kawaii character, environmental awareness aesthetic, green planet hug, tree planting nature conservation, eco-friendly motifs',
+   keywords:['Earth Day','environment','eco kawaii','planet hug','go green','recycle','tree planting','nature conservation','climate'],
+   neg:'pollution imagery, ugly, deformed, text, watermark',
+   seoBase:'Earth Day sticker kawaii eco green planet environment conservation',
+   vars:['planet Earth hug','tree planting chibi','recycling symbol','solar energy','ocean clean','leaf crown character','go green badge','butterfly nature','water drop save','eco bag carry','flower earth','green energy']},
+
+  {id:'diwali',i:'🪔',t:'Diwali Festival',sub:'Hindu festival of lights stickers',month:10,demand:'hi',
+   core:'Diwali festival kawaii character, festival of lights aesthetic, diya lamp rangoli mandala, vibrant orange gold palette, celebration dance',
+   keywords:['Diwali sticker','festival lights','diya lamp','rangoli','fireworks','Indian festival','deepavali','mandala','celebration'],
+   neg:'ugly, deformed, offensive, text, watermark',
+   seoBase:'Diwali festival lights sticker kawaii diya lamp rangoli Indian celebration',
+   vars:['diya oil lamp','rangoli pattern','firework burst','sugar sweet mithai','dancing character','lotus diya','peacock feather','elephant decorated','gold coin prosperity','sari outfit chibi','marigold garland','family lighting diya']},
+
+  {id:'thanksgiving',i:'🦃',t:'Thanksgiving',sub:'US Thanksgiving harvest celebration stickers',month:11,demand:'hi',
+   core:'Thanksgiving kawaii character, harvest celebration aesthetic, turkey chibi pumpkin pie autumn leaves, warm orange brown palette, gratitude family',
+   keywords:['Thanksgiving sticker','turkey kawaii','harvest','pumpkin pie','autumn leaves','gratitude','family dinner','cornucopia','pilgrim'],
+   neg:'ugly, deformed, colonial insensitive, text, watermark',
+   seoBase:'Thanksgiving sticker kawaii turkey harvest pumpkin pie autumn celebration',
+   vars:['turkey chibi wave','pumpkin pie slice','cornucopia harvest','autumn leaf pile','family dinner table','apple cider cup','grateful heart','scarecrow cute','harvest basket','maple leaf fall','thankful banner','cozy sweater season']},
+
+  {id:'holi_festival',i:'🌈',t:'Holi Festival',sub:'Indian spring color festival stickers',month:3,demand:'md',
+   core:'Holi festival kawaii character, spring color celebration aesthetic, powder color burst vibrant spectrum, joyful dancing celebration India',
+   keywords:['Holi sticker','color festival','powder color','Indian spring','rang celebration','festival colors','vibrant burst','joy dance'],
+   neg:'ugly, deformed, text, watermark',
+   seoBase:'Holi festival color sticker kawaii Indian spring celebration powder burst',
+   vars:['color powder throw','rainbow burst','dancing chibi','water balloon','floral spring','colorful hands','festival crowd','drum dhol celebration','gulal powder heart','spring flowers bloom','water gun play','bright sari outfit']},
+
+  {id:'womens_day',i:'👩',t:"Women's Day",sub:'International Women\'s Day March 8 stickers',month:3,demand:'md',
+   core:'International Women\'s Day kawaii character, empowerment aesthetic, strong confident woman chibi, floral feminism, purple palette celebration',
+   keywords:["Women's Day",'IWD','empowerment','feminist kawaii','strong woman','girl power','March 8','equality','floral feminist'],
+   neg:'ugly, deformed, negative stereotypes, text, watermark',
+   seoBase:"Women's Day sticker kawaii empowerment girl power feminist March 8",
+   vars:['fist raise empowerment','flower crown woman','career professional chibi','equal rights badge','purple floral frame','scientist woman','leader woman chibi','community women circle','you go girl banner','heart hands feminist','diverse women group','butterfly freedom']},
+
+  {id:'new_years',i:'🎆',t:"New Year's",sub:"New Year's Eve & Day celebration stickers",month:1,demand:'hi',
+   core:"New Year's celebration kawaii character, countdown midnight fireworks aesthetic, clock 12 o'clock champagne balloon confetti, festive gold silver palette",
+   keywords:["New Year's",'New Year Eve','fireworks kawaii','countdown','midnight celebration','champagne pop','confetti burst','resolution','Jan 1'],
+   neg:'ugly, deformed, alcohol abuse imagery, text, watermark',
+   seoBase:"New Year's sticker kawaii fireworks celebration countdown midnight confetti",
+   vars:['firework burst midnight','countdown clock 12','confetti cannon pop','party hat celebration','resolution journal','champagne glass toast','gold silver balloon','city skyline fireworks','snowflake new year','cheers celebration','happy new year banner','fresh start sunrise']},
+
+  {id:'valentine',i:'💝',t:"Valentine's Day",sub:'February 14 love romance stickers',month:2,demand:'hi',
+   core:"Valentine's Day kawaii character, love romance aesthetic, heart candy chocolate rose bouquet, red pink palette, couples celebration",
+   keywords:["Valentine's Day",'love sticker','romance kawaii','heart','chocolate','rose bouquet','cupid','February 14','sweetheart'],
+   neg:'suggestive adult, ugly, deformed, text, watermark',
+   seoBase:"Valentine's Day sticker kawaii love romance heart chocolate rose",
+   vars:['heart balloon bouquet','chocolate box gift','rose flower single','cupid arrow chibi','love letter envelope','couple heart lock','candy hearts XOXO','teddy bear hug','Ferrero Rocher gift','heart confetti burst','be mine banner','love potion bottle']},
 ];
 
 // ══════════════════════════════════════════════════
@@ -1426,6 +1603,18 @@ const TEMPLATES=[
   {i:'🏳️‍🌈',t:'Pride Bundle',cat:'pride_rainbow',cut:'die_cut',finish:'holographic',outline:'white_halo'},
   {i:'🎂',t:'Birthday Pack',cat:'birthday_party',cut:'die_cut',finish:'holographic',outline:'ultra_black'},
   {i:'🐱',t:'Cat Universe',cat:'cat_universe',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  // Moment templates
+  {i:'🐑',t:'Idul Adha Pack',cat:'idul_adha',cut:'die_cut',finish:'holographic',outline:'ultra_black'},
+  {i:'🇮🇩',t:'17 Agustus Pack',cat:'indonesia_17agustus',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'🧧',t:'Imlek Bundle',cat:'imlek_cny',cut:'die_cut',finish:'holographic',outline:'white_halo'},
+  {i:'🎓',t:'Graduation Set',cat:'graduation',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'🎒',t:'Back to School',cat:'back_to_school',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'🌍',t:'Earth Day Kit',cat:'earth_day',cut:'kiss_cut',finish:'matte',outline:'no_outline'},
+  {i:'🪔',t:'Diwali Pack',cat:'diwali',cut:'die_cut',finish:'holographic',outline:'neon_glow'},
+  {i:'🦃',t:'Thanksgiving Set',cat:'thanksgiving',cut:'die_cut',finish:'matte',outline:'ultra_black'},
+  {i:'🌈',t:'Holi Festival',cat:'holi_festival',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'💝',t:"Valentine's Pack",cat:'valentine',cut:'die_cut',finish:'holographic',outline:'white_halo'},
+  {i:'🎆',t:"New Year's Pack",cat:'new_years',cut:'die_cut',finish:'holographic',outline:'neon_glow'},
 ];
 
 // ══════════════════════════════════════════════════
@@ -1474,6 +1663,8 @@ const S={
   history:[],
   tab:'prompt',
   varCount:0,
+  catQuery:'',
+  activeMonth:'all',
 
   init(){
     this.renderCats();
@@ -1525,11 +1716,14 @@ const S={
   },
 
   filterCats(q){
-    const lower=q.toLowerCase();
-    document.querySelectorAll('.cat-btn').forEach(b=>{
-      const txt=b.textContent.toLowerCase();
-      b.style.display=txt.includes(lower)?'':'none';
-    });
+    this.catQuery=q.toLowerCase();
+    this.renderCats();
+  },
+
+  filterByMonth(m){
+    this.activeMonth=m;
+    document.querySelectorAll('.month-btn').forEach(b=>b.classList.toggle('active',b.dataset.month===m));
+    this.renderCats();
   },
 
   setTab(t){
@@ -1762,12 +1956,28 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
   renderCats(){
     const g=document.getElementById('catGrid');
     if(!g)return;
-    g.innerHTML=CATS.map(c=>`
+    const q=(this.catQuery||'').toLowerCase();
+    const m=this.activeMonth||'all';
+    const demandLabel={hi:'HIGH',md:'MED',lo:'LOW'};
+    const demandCls={hi:'demand-hi',md:'demand-md',lo:'demand-lo'};
+    const filtered=CATS.filter(c=>{
+      const matchQ=!q||(c.t+c.sub+(c.keywords||[]).join(' ')).toLowerCase().includes(q);
+      const matchM=m==='all'||(m==='0'?c.month===0:String(c.month)===m);
+      return matchQ&&matchM;
+    });
+    if(!filtered.length){
+      g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:16px;font-size:11px;color:var(--txt3)">No categories found</div>`;
+      return;
+    }
+    g.innerHTML=filtered.map(c=>`
       <button class="cat-btn${c.id===this.cat?' active':''}" data-cat="${c.id}" onclick="S.setCat('${c.id}')">
-        <span class="cat-ic">${c.i}</span>${c.t}
+        <span class="cat-ic">${c.i}</span>
+        <span class="cat-btn-name">${c.t}</span>
+        ${c.demand?`<span class="demand-badge ${demandCls[c.demand]||''}">${demandLabel[c.demand]||''}</span>`:''}
       </button>
     `).join('');
-    this.setCat(this.cat);
+    // update active state
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===this.cat));
   },
 
   renderMods(){
