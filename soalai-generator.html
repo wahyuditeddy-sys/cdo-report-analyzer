@@ -1204,8 +1204,8 @@ function renderStimulus(teks) {
   ]})]});
 }
 
-// numRef: "num-kiri" atau "num-kanan" sesuai kolom
-function renderPG(s, numRef) {
+// Render satu soal PG — pakai single num reference (alir native 2-kolom Word)
+function renderPG(s) {
   const {Paragraph,TextRun}=D();
   const items=[];
 
@@ -1215,9 +1215,9 @@ function renderPG(s, numRef) {
     items.push(new Paragraph({spacing:{before:20,after:0},children:[]}));
   }
 
-  // Teks soal — gunakan Word auto-numbering (TANPA nomor di teks)
+  // Teks soal — Word auto-numbering (TANPA nomor di teks)
   items.push(new Paragraph({
-    numbering:{ reference: numRef, level: 0 },
+    numbering:{ reference:'num-soal', level:0 },
     children:[new TextRun({text:s.soal,font:DC.FONT,size:DC.FS})]
   }));
 
@@ -1234,44 +1234,38 @@ function renderPG(s, numRef) {
   return items;
 }
 
-// Kembalikan { half, table } agar buildSoalPG tahu posisi kolom kanan
-function soal2Kolom(soal) {
-  const {Paragraph,Table,TableRow,TableCell,BorderStyle,WidthType}=D();
-  const tw=DC.PW-DC.MRG*2, div=160, cw=Math.floor((tw-div)/2);
-  const half=Math.ceil(soal.length/2);
-  // Kolom kiri: num-kiri (mulai 1), kolom kanan: num-kanan (mulai half+1)
-  const left=soal.slice(0,half).flatMap(s=>renderPG(s,'num-kiri'));
-  const right=soal.slice(half).flatMap(s=>renderPG(s,'num-kanan'));
-  const nb=NB(); const nb1={style:D().BorderStyle.NONE,size:0,color:'FFFFFF'};
-  const dv={style:BorderStyle.SINGLE,size:6,color:'888888'};
-  return {
-    half,
-    table: new Table({width:{size:tw,type:WidthType.DXA},columnWidths:[cw,div,cw],rows:[new TableRow({children:[
-      new TableCell({borders:nb,width:{size:cw,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:80},children:left}),
-      new TableCell({borders:{top:nb1,bottom:nb1,left:dv,right:dv},width:{size:div,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:0},children:[new Paragraph({children:[]})]}),
-      new TableCell({borders:nb,width:{size:cw,type:WidthType.DXA},margins:{top:0,bottom:0,left:80,right:0},children:right}),
-    ]})]})
-  };
-}
-
 async function buildSoalPG(info, soalPG) {
-  const {Document,Packer,Paragraph,TextRun,Footer,AlignmentType,PageNumber}=D();
+  const {Document,Packer,Paragraph,TextRun,Footer,AlignmentType,PageNumber,SectionType}=D();
   const INFO={...info,subtitle:info.namaUjian,petunjuk:'Berilah tanda silang (X) pada huruf A, B, C, atau D di depan jawaban yang paling benar!'};
-  const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[
+  const mkFooter=()=>new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[
     new TextRun({text:`${info.mapel}  |  Kelas ${info.kelas}  |  ${info.namaUjian}  |  Halaman `,font:DC.FONT,size:18}),
     new TextRun({children:[PageNumber.CURRENT],font:DC.FONT,size:18}),
     new TextRun({text:' dari ',font:DC.FONT,size:18}),
     new TextRun({children:[PageNumber.TOTAL_PAGES],font:DC.FONT,size:18}),
   ]})]});
-  const {half, table}=soal2Kolom(soalPG);
+  // Semua soal mengalir dengan satu numbering — Word native 2-column yang atur pembagian per halaman
+  const allSoal=soalPG.flatMap(s=>renderPG(s));
+  const pageProps={size:{width:DC.PW,height:DC.PH},margin:{top:DC.MRG,right:DC.MRG,bottom:DC.MRG+200,left:DC.MRG}};
   const doc=new Document({
-    // Penomoran otomatis Word: kiri mulai 1, kanan mulai half+1
-    numbering:{ config:[buatNumConfig('num-kiri',1), buatNumConfig('num-kanan',half+1)] },
-    sections:[{
-      properties:{page:{size:{width:DC.PW,height:DC.PH},margin:{top:DC.MRG,right:DC.MRG,bottom:DC.MRG+200,left:DC.MRG}}},
-      footers:{default:footer},
-      children:[...buatHeader(INFO), table]
-    }]
+    // Satu numbering mulai dari 1 — mengalir otomatis kiri→kanan per halaman
+    numbering:{ config:[buatNumConfig('num-soal',1)] },
+    sections:[
+      {
+        // Section 1: Header full-lebar — CONTINUOUS agar section 2 mulai di halaman yang sama
+        properties:{ type:SectionType.CONTINUOUS, page:pageProps },
+        footers:{default:mkFooter()},
+        children:[...buatHeader(INFO)]
+      },
+      {
+        // Section 2: Soal 2 kolom native Word — angka mengalir kiri→kanan per halaman
+        properties:{
+          page:pageProps,
+          column:{ count:2, space:720, separate:true }
+        },
+        footers:{default:mkFooter()},
+        children:allSoal
+      }
+    ]
   });
   return D().Packer.toBlob(doc);
 }
