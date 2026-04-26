@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SoalAI Generator — Generator Soal Ujian Otomatis</title>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.7.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --green: #34a853;
+      --yellow: #f9ab00;
+      --red: #ea4335;
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --border: #dadce0;
+      --text: #202124;
+      --text-2: #5f6368;
+      --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+      color: #fff; padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header h1 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .badge { font-size: 0.7rem; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+    .btn-settings { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-family: inherit; transition: background 0.2s; }
+    .btn-settings:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ── Card ── */
+    .card { background: var(--surface); border-radius: 14px; padding: 22px 24px; margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .card-title { font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-2); margin-bottom: 5px; letter-spacing: 0.3px; text-transform: uppercase; }
+    input[type=text], input[type=password], select, textarea {
+      width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; font-family: inherit; color: var(--text); background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,0.12); }
+    textarea { resize: vertical; line-height: 1.5; }
+    .hint { font-size: 0.76rem; color: var(--text-2); margin-top: 4px; }
+
+    /* ── File Upload ── */
+    .file-upload {
+      border: 2px dashed var(--border); border-radius: 10px; padding: 22px 16px;
+      text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: #fafbfc;
+    }
+    .file-upload:hover { border-color: var(--primary); background: rgba(26,115,232,0.03); }
+    .file-upload.has-file { border-color: var(--green); background: rgba(52,168,83,0.04); border-style: solid; }
+    .file-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .file-upload .up-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .file-upload .up-text { font-size: 0.85rem; color: var(--text-2); }
+    .file-upload .up-name { margin-top: 6px; font-size: 0.85rem; color: var(--green); font-weight: 600; }
+
+    /* ── Jenis Soal Toggle ── */
+    .toggle-group { display: flex; gap: 8px; }
+    .toggle-opt {
+      flex: 1; padding: 10px 8px; border: 1.5px solid var(--border); border-radius: 9px;
+      text-align: center; cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: all 0.2s; color: var(--text-2);
+    }
+    .toggle-opt.active { border-color: var(--primary); background: rgba(26,115,232,0.08); color: var(--primary); font-weight: 700; }
+    .toggle-opt:hover:not(.active) { border-color: #aaa; color: var(--text); }
+
+    /* ── Buttons ── */
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; font-family: inherit; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-ghost { background: #f1f3f4; color: var(--text); }
+    .btn-ghost:hover { background: #e8eaed; }
+    .btn-generate {
+      width: 100%; padding: 17px; font-size: 1.05rem; font-weight: 700;
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: #fff; border-radius: 12px; justify-content: center; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(26,115,232,0.35); border: none; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-generate:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,115,232,0.45); }
+    .btn-generate:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn-dl { background: var(--green); color: #fff; width: 100%; justify-content: center; padding: 11px; }
+    .btn-dl:hover:not(:disabled) { background: #2d9248; }
+    .btn-dl:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Alert ── */
+    .alert { padding: 12px 15px; border-radius: 9px; font-size: 0.88rem; margin-bottom: 14px; line-height: 1.5; }
+    .alert-error { background: rgba(234,67,53,0.08); color: #c62828; border: 1px solid rgba(234,67,53,0.25); }
+    .alert-success { background: rgba(52,168,83,0.08); color: #1b5e20; border: 1px solid rgba(52,168,83,0.25); }
+    .alert-info { background: rgba(26,115,232,0.08); color: #0d47a1; border: 1px solid rgba(26,115,232,0.2); }
+
+    /* ── Progress ── */
+    .prog-wrap { display: none; }
+    .prog-wrap.show { display: block; }
+    .step-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f1f3f4; }
+    .step-row:last-child { border-bottom: none; }
+    .step-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+    .step-icon.pending { background: #f1f3f4; color: #aaa; }
+    .step-icon.running { background: rgba(26,115,232,0.12); color: var(--primary); animation: blink 1.2s ease-in-out infinite; }
+    .step-icon.done { background: rgba(52,168,83,0.12); color: var(--green); }
+    .step-icon.err { background: rgba(234,67,53,0.1); color: var(--red); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .step-info { flex: 1; }
+    .step-label { font-size: 0.88rem; font-weight: 600; }
+    .step-detail { font-size: 0.78rem; color: var(--text-2); margin-top: 2px; }
+
+    /* ── Results ── */
+    .results-wrap { display: none; }
+    .results-wrap.show { display: block; }
+    .dl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .dl-card { border: 1.5px solid var(--border); border-radius: 11px; padding: 18px 14px; text-align: center; }
+    .dl-icon { font-size: 2.2rem; margin-bottom: 8px; }
+    .dl-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
+    .dl-desc { font-size: 0.78rem; color: var(--text-2); margin-bottom: 12px; }
+
+    /* ── Distribution ── */
+    .dist-bar { display: flex; border-radius: 6px; overflow: hidden; height: 22px; margin-top: 8px; }
+    .dist-seg { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: #fff; transition: width 0.5s; min-width: 18px; }
+    .dist-legend { display: flex; gap: 14px; margin-top: 6px; font-size: 0.78rem; color: var(--text-2); }
+
+    /* ── Log ── */
+    .log-box { background: #1e1e1e; color: #ccc; border-radius: 8px; padding: 14px; font-family: 'Courier New', monospace; font-size: 0.76rem; max-height: 180px; overflow-y: auto; margin-top: 10px; display: none; }
+    .log-box.show { display: block; }
+    .log-line { padding: 1px 0; }
+    .log-ok { color: #4ec9b0; }
+    .log-warn { color: #dcdcaa; }
+    .log-err { color: #f48771; }
+    .log-info { color: #9cdcfe; }
+
+    /* ── Responsive ── */
+    @media (max-width: 580px) {
+      .form-row { grid-template-columns: 1fr; }
+      .dl-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1rem; }
+    }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 6px 0 14px; }
+
+    /* ── New school mini-form ── */
+    .mini-form { background: #f8f9fa; border-radius: 10px; padding: 16px; margin-top: 10px; border: 1px solid var(--border); }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 500; color: var(--text); cursor: pointer; }
+    .checkbox-label input { width: auto; cursor: pointer; }
+
+    /* ── Provider Cards ── */
+    .provider-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 6px; }
+    @media(max-width:580px){ .provider-grid { grid-template-columns: repeat(3,1fr); } }
+    .prov-card {
+      border: 2px solid var(--border); border-radius: 10px; padding: 10px 6px;
+      text-align: center; cursor: pointer; transition: all 0.18s; background: #fafbfc;
+    }
+    .prov-card:hover { border-color: var(--primary); background: rgba(26,115,232,0.04); }
+    .prov-card.active { border-color: var(--primary); background: rgba(26,115,232,0.08); }
+    .prov-icon { font-size: 1.5rem; margin-bottom: 3px; }
+    .prov-name { font-size: 0.75rem; font-weight: 700; color: var(--text); }
+    .prov-sub  { font-size: 0.66rem; color: var(--text-2); margin-top: 1px; }
+    .prov-badge { font-size: 0.6rem; background: #e8f5e9; color: #2e7d32; border-radius: 4px; padding: 1px 5px; margin-top: 3px; display: inline-block; }
+    .model-input-row { display: flex; gap: 8px; }
+    .model-input-row select { flex: 1; }
+    .model-custom-inp { flex: 1; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ HEADER -->
+<div class="header">
+  <h1>📚 SoalAI Generator <span class="badge">v2.0</span></h1>
+  <button class="btn-settings" onclick="toggleSettings()">⚙️ Pengaturan API</button>
+</div>
+
+<div class="container">
+
+  <!-- ══ SETTINGS (collapsible) ══════════════════════════════════ -->
+  <div class="card" id="settingsCard" style="display:none">
+    <div class="card-title">⚙️ Pengaturan API</div>
+
+    <!-- Provider Cards -->
+    <div class="form-group">
+      <label>Provider AI</label>
+      <div class="provider-grid" id="providerGrid">
+        <div class="prov-card active" data-p="anthropic" onclick="selectProvider('anthropic')">
+          <div class="prov-icon">🤖</div>
+          <div class="prov-name">Anthropic</div>
+          <div class="prov-sub">Claude</div>
+          <div class="prov-badge">PDF ✓</div>
+        </div>
+        <div class="prov-card" data-p="openai" onclick="selectProvider('openai')">
+          <div class="prov-icon">✨</div>
+          <div class="prov-name">OpenAI</div>
+          <div class="prov-sub">ChatGPT</div>
+        </div>
+        <div class="prov-card" data-p="openrouter" onclick="selectProvider('openrouter')">
+          <div class="prov-icon">🔀</div>
+          <div class="prov-name">OpenRouter</div>
+          <div class="prov-sub">200+ Model</div>
+        </div>
+        <div class="prov-card" data-p="gemini" onclick="selectProvider('gemini')">
+          <div class="prov-icon">💎</div>
+          <div class="prov-name">Google</div>
+          <div class="prov-sub">Gemini</div>
+          <div class="prov-badge">PDF ✓</div>
+        </div>
+        <div class="prov-card" data-p="custom" onclick="selectProvider('custom')">
+          <div class="prov-icon">⚙️</div>
+          <div class="prov-name">Custom</div>
+          <div class="prov-sub">OpenAI-API</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Base URL — tampil untuk OpenRouter & Custom -->
+    <div class="form-group" id="baseUrlGroup" style="display:none">
+      <label id="baseUrlLabel">Base URL</label>
+      <input type="text" id="baseUrl" placeholder="https://openrouter.ai/api/v1"
+             oninput="saveConf('baseUrl', this.value)" />
+      <div class="hint" id="baseUrlHint">URL endpoint OpenAI-compatible. Kosongkan untuk default provider.</div>
+    </div>
+
+    <!-- API Key -->
+    <div class="form-group">
+      <label id="apiKeyLabel">API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-xxxxxxxxxx"
+             oninput="saveConf('apiKey', this.value)" />
+      <div class="hint" id="apiKeyHint">🔒 Tersimpan di browser (localStorage). Hanya dikirim ke api.anthropic.com</div>
+    </div>
+
+    <!-- Model -->
+    <div class="form-group">
+      <label>Model AI</label>
+      <div class="model-input-row">
+        <select id="modelSel" onchange="onModelSelChange(this.value)"></select>
+        <input type="text" id="modelCustom" class="model-custom-inp" placeholder="contoh: openai/gpt-4o"
+               oninput="saveConf('model', this.value)" />
+      </div>
+      <div class="hint" id="modelHint"></div>
+    </div>
+  </div>
+
+  <!-- ══ SEKOLAH & INFO UJIAN ══════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">🏫 Informasi Sekolah & Ujian</div>
+
+    <div class="form-group">
+      <label>Nama Sekolah</label>
+      <div style="display:flex;gap:8px">
+        <select id="schoolSel" style="flex:1" onchange="onSchoolChange(this.value)"></select>
+        <button class="btn btn-ghost" onclick="toggleNewSchool()">+ Tambah</button>
+      </div>
+    </div>
+
+    <div id="newSchoolBox" class="mini-form" style="display:none">
+      <div class="form-group">
+        <label>Nama Sekolah Baru</label>
+        <input type="text" id="newSchoolName" placeholder="contoh: SMA Negeri 3 Bandung" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="newSchoolIslami" />
+          Sekolah Islam / Muhammadiyah (nama & konteks Islami)
+        </label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" onclick="saveNewSchool()">💾 Simpan Sekolah</button>
+        <button class="btn btn-ghost" onclick="toggleNewSchool()">Batal</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Mata Pelajaran <span style="color:var(--red)">*</span></label>
+        <input type="text" id="mapel" placeholder="contoh: Matematika, IPA, Bahasa Indonesia" />
+      </div>
+      <div class="form-group">
+        <label>Kelas <span style="color:var(--red)">*</span></label>
+        <input type="text" id="kelas" placeholder="contoh: VII, VIII, X" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Semester</label>
+        <select id="semester">
+          <option value="Ganjil">Ganjil</option>
+          <option value="Genap">Genap</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tahun Ajaran</label>
+        <input type="text" id="tahunAjaran" value="2025/2026" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Jenis Ujian</label>
+        <select id="jenisUjian">
+          <option value="UH">UH — Ulangan Harian</option>
+          <option value="STS">STS — Sumatif Tengah Semester</option>
+          <option value="PTS">PTS — Penilaian Tengah Semester</option>
+          <option value="UTS">UTS — Ujian Tengah Semester</option>
+          <option value="PAS" selected>PAS — Penilaian Akhir Semester</option>
+          <option value="UAS">UAS — Ujian Akhir Semester</option>
+          <option value="Try-Out">Try-Out</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Waktu Ujian (menit)</label>
+        <input type="text" id="waktu" value="90" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Nama Penyusun</label>
+      <input type="text" id="penyusun" value="Guru Mata Pelajaran" />
+    </div>
+  </div>
+
+  <!-- ══ JENIS & JUMLAH SOAL ════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">❓ Jenis & Jumlah Soal</div>
+
+    <div class="form-group">
+      <label>Jenis Soal</label>
+      <div class="toggle-group">
+        <div class="toggle-opt active" data-v="pg" onclick="setJenis('pg')">📝 Pilihan Ganda</div>
+        <div class="toggle-opt" data-v="essay" onclick="setJenis('essay')">✏️ Essay</div>
+        <div class="toggle-opt" data-v="campuran" onclick="setJenis('campuran')">📋 PG + Essay</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div id="secPG" class="form-group">
+        <label>Jumlah Soal PG</label>
+        <select id="jumlahPG">
+          <option value="10">10 soal</option>
+          <option value="20">20 soal</option>
+          <option value="30">30 soal</option>
+          <option value="40" selected>40 soal</option>
+          <option value="50">50 soal</option>
+        </select>
+      </div>
+      <div id="secEssay" class="form-group" style="display:none">
+        <label>Jumlah Soal Essay</label>
+        <select id="jumlahEssay">
+          <option value="3">3 soal — ringkas (UH)</option>
+          <option value="5" selected>5 soal — standar (STS/PTS)</option>
+          <option value="10">10 soal — menengah</option>
+          <option value="15">15 soal — komprehensif</option>
+          <option value="20">20 soal — ujian besar</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FILE INPUT ════════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">📎 File Input</div>
+
+    <div class="form-group">
+      <label>File Kisi-Kisi <span style="color:var(--red)">*</span> — PDF, DOCX, TXT, atau Gambar</label>
+      <div class="file-upload" id="upKisiKisi">
+        <input type="file" id="fileKisiKisi" accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png,.webp"
+               onchange="onFile('kk', this)" />
+        <div class="up-icon">📄</div>
+        <div class="up-text">Klik atau drag &amp; drop file kisi-kisi</div>
+        <div class="up-name" id="nameKisiKisi">Belum ada file dipilih</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>File Materi / Buku — Opsional (meningkatkan kualitas soal)</label>
+      <div class="file-upload" id="upMateri">
+        <input type="file" id="fileMateri" accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png,.webp"
+               onchange="onFile('mat', this)" />
+        <div class="up-icon">📚</div>
+        <div class="up-text">Klik atau drag &amp; drop file materi (opsional)</div>
+        <div class="up-name" id="nameMateri">Belum ada file dipilih</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Catatan / Konteks Tambahan — Opsional</label>
+      <textarea id="catatan" rows="3"
+        placeholder="contoh: fokus bab 3–5, perbanyak soal topik X, hindari soal hitungan rumit..."></textarea>
+    </div>
+  </div>
+
+  <!-- ══ ALERT & GENERATE BUTTON ═══════════════════════════════════ -->
+  <div id="alertBox"></div>
+
+  <button class="btn-generate" id="genBtn" onclick="startGenerate()">
+    🚀 Generate Soal Sekarang
+  </button>
+
+  <!-- ══ PROGRESS ══════════════════════════════════════════════════ -->
+  <div class="card prog-wrap" id="progWrap" style="margin-top:18px">
+    <div class="card-title">⏳ Proses Generate</div>
+    <div id="stepsList"></div>
+    <div style="margin-top:10px;text-align:center">
+      <button class="btn btn-ghost" style="font-size:0.78rem" onclick="toggleLog()">📋 Tampilkan / Sembunyikan Log</button>
+    </div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+  <!-- ══ RESULTS ════════════════════════════════════════════════════ -->
+  <div class="card results-wrap" id="resultsWrap" style="margin-top:18px">
+    <div class="card-title">✅ Soal Berhasil Digenerate!</div>
+
+    <div id="distDisplay" style="margin-bottom:20px"></div>
+
+    <div class="dl-grid">
+      <div class="dl-card">
+        <div class="dl-icon">📝</div>
+        <div class="dl-title">Soal PG</div>
+        <div class="dl-desc">Lembar soal pilihan ganda untuk siswa</div>
+        <button class="btn btn-dl" id="dlPG" disabled onclick="dlFile('pg')">⬇️ Download Soal PG</button>
+      </div>
+      <div class="dl-card">
+        <div class="dl-icon">✏️</div>
+        <div class="dl-title">Soal Essay</div>
+        <div class="dl-desc">Lembar soal uraian untuk siswa</div>
+        <button class="btn btn-dl" id="dlEssay" disabled onclick="dlFile('essay')">⬇️ Download Soal Essay</button>
+      </div>
+      <div class="dl-card">
+        <div class="dl-icon">🔑</div>
+        <div class="dl-title">Kunci Jawaban</div>
+        <div class="dl-desc">Kunci + pembahasan lengkap untuk guru</div>
+        <button class="btn btn-dl" id="dlKunci" disabled onclick="dlFile('kunci')">⬇️ Download Kunci</button>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;text-align:center">
+      <button class="btn btn-primary" onclick="resetAll()">🔄 Generate Soal Baru</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SCRIPT -->
+<script>
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+//  PROVIDER CONFIG
+// ══════════════════════════════════════════════════════════
+const PROVIDERS = {
+  anthropic: {
+    label: 'Anthropic (Claude)',
+    keyPlaceholder: 'sk-ant-api03-xxxxxxxxxx',
+    keyHint: '🔒 Tersimpan di browser. Hanya dikirim ke api.anthropic.com — <a href="https://console.anthropic.com" target="_blank">Dapatkan Key</a>',
+    supportsFile: ['pdf','image','text'],
+    showBaseUrl: false,
+    models: [
+      { id:'claude-sonnet-4-6',           label:'Claude Sonnet 4.6 — Rekomendasi (cepat + akurat)' },
+      { id:'claude-opus-4-5-20251001',     label:'Claude Opus 4.5 — Kualitas tertinggi' },
+      { id:'claude-haiku-4-5-20251001',    label:'Claude Haiku 4.5 — Paling hemat & cepat' },
+    ]
+  },
+  openai: {
+    label: 'OpenAI (ChatGPT)',
+    keyPlaceholder: 'sk-xxxxxxxxxxxxxxxxxxxxxxxx',
+    keyHint: '🔒 Hanya dikirim ke api.openai.com — <a href="https://platform.openai.com/api-keys" target="_blank">Dapatkan Key</a>',
+    supportsFile: ['image','text'],
+    showBaseUrl: false,
+    models: [
+      { id:'gpt-4o',       label:'GPT-4o — Rekomendasi' },
+      { id:'gpt-4o-mini',  label:'GPT-4o Mini — Hemat' },
+      { id:'gpt-4-turbo',  label:'GPT-4 Turbo' },
+      { id:'o1-mini',      label:'o1-mini — Reasoning' },
+      { id:'o3-mini',      label:'o3-mini — Advanced Reasoning' },
+    ]
+  },
+  openrouter: {
+    label: 'OpenRouter (200+ Model)',
+    keyPlaceholder: 'sk-or-v1-xxxxxxxxxxxxxxxx',
+    keyHint: '🔒 Hanya dikirim ke openrouter.ai — <a href="https://openrouter.ai/keys" target="_blank">Dapatkan Key</a>',
+    supportsFile: ['image','text'],
+    showBaseUrl: false,
+    models: [
+      { id:'anthropic/claude-sonnet-4-5',         label:'Claude Sonnet 4.5 (via OpenRouter)' },
+      { id:'openai/gpt-4o',                        label:'GPT-4o (via OpenRouter)' },
+      { id:'google/gemini-2.0-flash',              label:'Gemini 2.0 Flash — Cepat & murah' },
+      { id:'google/gemini-2.5-pro',                label:'Gemini 2.5 Pro — Paling canggih' },
+      { id:'deepseek/deepseek-r1',                 label:'DeepSeek R1 — Reasoning' },
+      { id:'deepseek/deepseek-chat',               label:'DeepSeek V3 — Hemat' },
+      { id:'meta-llama/llama-3.3-70b-instruct',   label:'Llama 3.3 70B' },
+      { id:'qwen/qwq-32b',                         label:'QwQ 32B — Reasoning' },
+      { id:'mistralai/mistral-large',              label:'Mistral Large' },
+      { id:'__custom__',                           label:'— Ketik model ID sendiri —' },
+    ]
+  },
+  gemini: {
+    label: 'Google Gemini',
+    keyPlaceholder: 'AIzaSyxxxxxxxxxxxxxxxxxxxxxxxx',
+    keyHint: '🔒 Hanya dikirim ke generativelanguage.googleapis.com — <a href="https://aistudio.google.com/apikey" target="_blank">Dapatkan Key</a>',
+    supportsFile: ['pdf','image','text'],
+    showBaseUrl: false,
+    models: [
+      { id:'gemini-2.0-flash',       label:'Gemini 2.0 Flash — Rekomendasi' },
+      { id:'gemini-2.5-pro',         label:'Gemini 2.5 Pro — Paling canggih' },
+      { id:'gemini-1.5-pro',         label:'Gemini 1.5 Pro' },
+      { id:'gemini-1.5-flash',       label:'Gemini 1.5 Flash — Hemat' },
+    ]
+  },
+  custom: {
+    label: 'Custom (OpenAI-compatible)',
+    keyPlaceholder: 'API Key provider Anda',
+    keyHint: '🔒 Tersimpan di browser. Dikirim ke Base URL yang Anda masukkan.',
+    supportsFile: ['image','text'],
+    showBaseUrl: true,
+    models: [
+      { id:'__custom__', label:'— Ketik model ID di bawah —' },
+    ]
+  },
+};
+
+// ══════════════════════════════════════════════════════════
+const DEFAULT_SCHOOLS = [
+  { id:1, nama:"SMP Muhammadiyah 22 Setiabudi Pamulang", konteksIslami:true }
+];
+
+const S = {
+  provider: localStorage.getItem('sai_provider') || 'anthropic',
+  apiKey:   localStorage.getItem('sai_key')      || '',
+  model:    localStorage.getItem('sai_model')    || 'claude-sonnet-4-6',
+  baseUrl:  localStorage.getItem('sai_baseurl')  || '',
+  schools:  JSON.parse(localStorage.getItem('sai_schools') || JSON.stringify(DEFAULT_SCHOOLS)),
+  jenis:    'pg',
+  kkFile:  null, matFile: null,
+  kkContent: null, matContent: null,
+  soalPG: [], soalEssay: [],
+  blobs: {}, info: {}, sessionId: '',
+};
+
+let activeSteps = [];
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  selectProvider(S.provider, true); // init UI tanpa save ulang
+  document.getElementById('apiKey').value = S.apiKey;
+  if (S.baseUrl) document.getElementById('baseUrl').value = S.baseUrl;
+  renderSchools();
+});
+
+// ══════════════════════════════════════════════════════════
+//  SETTINGS — PROVIDER
+// ══════════════════════════════════════════════════════════
+function toggleSettings() {
+  const c = document.getElementById('settingsCard');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+}
+
+function selectProvider(p, initOnly = false) {
+  S.provider = p;
+  if (!initOnly) localStorage.setItem('sai_provider', p);
+
+  // Update card highlight
+  document.querySelectorAll('.prov-card').forEach(el => {
+    el.classList.toggle('active', el.dataset.p === p);
+  });
+
+  const cfg = PROVIDERS[p] || PROVIDERS.anthropic;
+
+  // API Key label & hint
+  document.getElementById('apiKeyLabel').textContent = cfg.label + ' — API Key';
+  document.getElementById('apiKey').placeholder      = cfg.keyPlaceholder;
+  document.getElementById('apiKeyHint').innerHTML    = cfg.keyHint;
+
+  // Base URL visibility
+  const bg = document.getElementById('baseUrlGroup');
+  bg.style.display = cfg.showBaseUrl ? 'block' : 'none';
+  if (p === 'openrouter') {
+    bg.style.display = 'block';
+    document.getElementById('baseUrlLabel').textContent = 'Base URL (opsional)';
+    document.getElementById('baseUrl').placeholder = 'https://openrouter.ai/api/v1';
+    document.getElementById('baseUrlHint').textContent = 'Kosongkan untuk default openrouter.ai';
+  } else if (p === 'custom') {
+    document.getElementById('baseUrlLabel').textContent = 'Base URL *';
+    document.getElementById('baseUrl').placeholder = 'http://localhost:11434/v1  atau  https://api.provider.com/v1';
+    document.getElementById('baseUrlHint').textContent = 'URL endpoint yang kompatibel OpenAI (Ollama, LM Studio, dll.)';
+  }
+
+  // Model list
+  const sel = document.getElementById('modelSel');
+  sel.innerHTML = cfg.models.map(m =>
+    `<option value="${m.id}">${m.label}</option>`
+  ).join('');
+
+  // Restore saved model if matches provider
+  const savedModel = localStorage.getItem('sai_model') || '';
+  const hasMatch = cfg.models.some(m => m.id === savedModel);
+  if (hasMatch) { sel.value = savedModel; }
+  else { sel.value = cfg.models[0].id; }
+
+  onModelSelChange(sel.value, true);
+}
+
+function onModelSelChange(val, initOnly = false) {
+  const customInp = document.getElementById('modelCustom');
+  const isCustom  = val === '__custom__';
+  customInp.style.display = isCustom ? 'inline-block' : 'none';
+  if (!isCustom) {
+    S.model = val;
+    if (!initOnly) localStorage.setItem('sai_model', val);
+    const hint = document.getElementById('modelHint');
+    hint.textContent = '';
+  } else {
+    customInp.value = S.model.includes('/') || !S.model.startsWith('claude') ? S.model : '';
+    document.getElementById('modelHint').textContent = 'Masukkan model ID, contoh: openai/gpt-4o atau meta-llama/llama-3.3-70b-instruct';
+  }
+}
+
+function saveConf(k, v) {
+  if (k === 'apiKey')  { S.apiKey  = v; localStorage.setItem('sai_key', v); }
+  if (k === 'model')   { S.model   = v; localStorage.setItem('sai_model', v); }
+  if (k === 'baseUrl') { S.baseUrl = v; localStorage.setItem('sai_baseurl', v); }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SCHOOLS
+// ══════════════════════════════════════════════════════════
+function renderSchools() {
+  const sel = document.getElementById('schoolSel');
+  sel.innerHTML = S.schools.map(s =>
+    `<option value="${s.id}">${s.nama}</option>`
+  ).join('');
+}
+
+function onSchoolChange() {}
+
+function toggleNewSchool() {
+  const box = document.getElementById('newSchoolBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveNewSchool() {
+  const nama = document.getElementById('newSchoolName').value.trim();
+  if (!nama) { flash('Nama sekolah tidak boleh kosong!', 'error'); return; }
+  const newId = Math.max(...S.schools.map(s => s.id), 0) + 1;
+  const konteksIslami = document.getElementById('newSchoolIslami').checked;
+  S.schools.push({ id: newId, nama, konteksIslami });
+  localStorage.setItem('sai_schools', JSON.stringify(S.schools));
+  renderSchools();
+  document.getElementById('schoolSel').value = newId;
+  toggleNewSchool();
+  document.getElementById('newSchoolName').value = '';
+  document.getElementById('newSchoolIslami').checked = false;
+  flash('✅ Sekolah berhasil disimpan!', 'success');
+}
+
+// ══════════════════════════════════════════════════════════
+//  JENIS SOAL
+// ══════════════════════════════════════════════════════════
+function setJenis(v) {
+  S.jenis = v;
+  document.querySelectorAll('.toggle-opt').forEach(el =>
+    el.classList.toggle('active', el.dataset.v === v)
+  );
+  const showPG = v === 'pg' || v === 'campuran';
+  const showEs = v === 'essay' || v === 'campuran';
+  document.getElementById('secPG').style.display    = showPG ? 'block' : 'none';
+  document.getElementById('secEssay').style.display = showEs ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+//  FILE HANDLING
+// ══════════════════════════════════════════════════════════
+function onFile(type, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (type === 'kk') {
+    S.kkFile = file;
+    document.getElementById('nameKisiKisi').textContent = `✅ ${file.name} (${fmtSize(file.size)})`;
+    document.getElementById('upKisiKisi').classList.add('has-file');
+  } else {
+    S.matFile = file;
+    document.getElementById('nameMateri').textContent = `✅ ${file.name} (${fmtSize(file.size)})`;
+    document.getElementById('upMateri').classList.add('has-file');
+  }
+}
+
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+function ab2b64(buf) {
+  let bin = '';
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+async function readFileContent(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'txt') {
+    return { type: 'text', content: await file.text() };
+  }
+  if (ext === 'pdf') {
+    const buf = await file.arrayBuffer();
+    return { type: 'pdf', data: ab2b64(buf) };
+  }
+  if (['docx','doc'].includes(ext)) {
+    const buf = await file.arrayBuffer();
+    const res = await mammoth.extractRawText({ arrayBuffer: buf });
+    return { type: 'text', content: res.value };
+  }
+  if (['jpg','jpeg','png','webp','gif'].includes(ext)) {
+    return new Promise(resolve => {
+      const fr = new FileReader();
+      fr.onload = e => resolve({ type: 'image', data: e.target.result.split(',')[1], mediaType: file.type || 'image/jpeg' });
+      fr.readAsDataURL(file);
+    });
+  }
+  throw new Error(`Format tidak didukung: .${ext}`);
+}
+
+// ══════════════════════════════════════════════════════════
+//  CLAUDE API
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  MULTI-PROVIDER AI LAYER
+// ══════════════════════════════════════════════════════════
+
+// Entry point — routing ke provider yang aktif
+async function callAI(system, userContent, maxTokens = 8192) {
+  if (!S.apiKey) throw new Error('API Key belum diisi! Buka ⚙️ Pengaturan API.');
+  switch (S.provider) {
+    case 'gemini':    return callGemini(system, userContent, maxTokens);
+    case 'anthropic': return callAnthropic(system, userContent, maxTokens);
+    default:          return callOpenAICompat(system, userContent, maxTokens);
+  }
+}
+
+// Alias lama agar tidak perlu ganti nama di semua tempat
+const claude = callAI;
+
+// ── Anthropic (Claude) ──────────────────────────────────
+async function callAnthropic(system, userContent, maxTokens) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': S.apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({ model: S.model, max_tokens: maxTokens, system, messages:[{role:'user', content: userContent}] })
+  });
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(`Anthropic ${r.status}: ${e.error?.message||r.statusText}`); }
+  const d = await r.json();
+  return d.content.map(b=>b.text||'').join('');
+}
+
+// ── OpenAI-compatible (OpenAI / OpenRouter / Custom) ────
+async function callOpenAICompat(system, userContent, maxTokens) {
+  const baseUrl =
+    S.provider === 'openai'     ? 'https://api.openai.com/v1' :
+    S.provider === 'openrouter' ? (S.baseUrl || 'https://openrouter.ai/api/v1') :
+    (S.baseUrl || 'https://api.openai.com/v1');  // custom
+
+  // Konversi userContent dari format Anthropic → format OpenAI
+  let oaiContent;
+  if (typeof userContent === 'string') {
+    oaiContent = userContent;
+  } else if (Array.isArray(userContent)) {
+    oaiContent = userContent.map(item => {
+      if (item.type === 'text') return { type:'text', text: item.text };
+      if (item.type === 'image') return { type:'image_url', image_url:{ url:`data:${item.source.media_type};base64,${item.source.data}` } };
+      if (item.type === 'document') return { type:'text', text:'[File PDF tidak didukung langsung oleh provider ini. Silakan ekstrak teks terlebih dahulu, atau gunakan provider Anthropic / Google Gemini.]' };
+      return { type:'text', text: JSON.stringify(item) };
+    });
+  } else {
+    oaiContent = String(userContent);
+  }
+
+  const messages = [
+    { role:'system', content: system },
+    { role:'user',   content: oaiContent }
+  ];
+
+  const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${S.apiKey}` };
+  if (S.provider === 'openrouter') {
+    headers['HTTP-Referer'] = 'https://wahyuditeddy-sys.github.io/soalai-generator';
+    headers['X-Title']      = 'SoalAI Generator';
+  }
+
+  const r = await fetch(`${baseUrl}/chat/completions`, {
+    method:'POST', headers,
+    body: JSON.stringify({ model: S.model, max_tokens: maxTokens, messages })
+  });
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(`${S.provider} API ${r.status}: ${e.error?.message||r.statusText}`); }
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content || '';
+}
+
+// ── Google Gemini ────────────────────────────────────────
+async function callGemini(system, userContent, maxTokens) {
+  const model = S.model || 'gemini-2.0-flash';
+
+  // Konversi Anthropic format → Gemini parts
+  let parts = [];
+  if (typeof userContent === 'string') {
+    parts = [{ text: userContent }];
+  } else if (Array.isArray(userContent)) {
+    for (const item of userContent) {
+      if (item.type === 'text')
+        parts.push({ text: item.text });
+      else if (item.type === 'image')
+        parts.push({ inlineData:{ mimeType: item.source.media_type, data: item.source.data } });
+      else if (item.type === 'document')
+        parts.push({ inlineData:{ mimeType:'application/pdf', data: item.source.data } });
+    }
+  } else {
+    parts = [{ text: String(userContent) }];
+  }
+
+  const body = {
+    contents: [{ role:'user', parts }],
+    systemInstruction: { parts:[{ text: system }] },
+    generationConfig:  { maxOutputTokens: maxTokens, temperature: 0.7 }
+  };
+
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${S.apiKey}`,
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) }
+  );
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(`Gemini ${r.status}: ${e.error?.message||r.statusText}`); }
+  const d = await r.json();
+  if (d.error) throw new Error(`Gemini: ${d.error.message}`);
+  return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+}
+
+// Coba parse JSON; jika terpotong, coba recovery dengan menutup array
+function safeParseArray(text) {
+  const cleaned = stripJSON(text);
+  try { return JSON.parse(cleaned); } catch (_) {}
+  // Recovery: tutup JSON yang terpotong
+  let fixed = cleaned.trimEnd();
+  // Hapus item terakhir yang tidak lengkap (setelah koma terakhir di level array)
+  const lastGoodComma = fixed.lastIndexOf('},{');
+  if (lastGoodComma !== -1) {
+    fixed = fixed.slice(0, lastGoodComma + 1) + '}]';
+    try { return JSON.parse(fixed); } catch (_) {}
+  }
+  const lastBrace = fixed.lastIndexOf('}');
+  if (lastBrace !== -1) {
+    fixed = fixed.slice(0, lastBrace + 1) + ']';
+    try { return JSON.parse(fixed); } catch (_) {}
+  }
+  throw new Error('Respons AI tidak valid (JSON terpotong). Coba kurangi jumlah soal per batch atau ganti model.');
+}
+
+function buildContent(fc, prompt) {
+  if (!fc || fc.type === 'text') {
+    return fc ? `${prompt}\n\nKonten:\n${fc.content}` : prompt;
+  }
+
+  const prov = PROVIDERS[S.provider] || PROVIDERS.anthropic;
+
+  if (fc.type === 'pdf') {
+    if (prov.supportsFile.includes('pdf')) {
+      // Anthropic & Gemini: kirim PDF as base64 document
+      return [
+        { type:'text', text: prompt },
+        { type:'document', source:{ type:'base64', media_type:'application/pdf', data: fc.data } }
+      ];
+    } else {
+      // OpenAI / Custom: tidak support PDF native — kirim teks warning
+      return `${prompt}\n\n⚠️ Catatan: File PDF dikirim sebagai referensi saja. Provider "${prov.label}" tidak mendukung baca PDF secara langsung. Gunakan file TXT, atau pilih provider Anthropic / Google Gemini untuk dukungan penuh.`;
+    }
+  }
+
+  if (fc.type === 'image') {
+    // Semua provider mendukung gambar (dalam format masing-masing — konversi di layer callAI)
+    return [
+      { type:'text', text: prompt },
+      { type:'image', source:{ type:'base64', media_type: fc.mediaType, data: fc.data } }
+    ];
+  }
+
+  return prompt;
+}
+
+function stripJSON(t) {
+  return t.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+}
+
+// ══════════════════════════════════════════════════════════
+//  AI FUNCTIONS
+// ══════════════════════════════════════════════════════════
+async function aiAnalyzeKisiKisi(fc, info) {
+  const prompt = `Analisis kisi-kisi ujian berikut untuk ${info.mapel} Kelas ${info.kelas}.
+Kembalikan HANYA JSON valid (tanpa markdown, tanpa teks lain):
+{"namaUjian":"string","mapel":"string","kelas":"string","indikator":[{"no":1,"materi":"nama topik","kompetensiDasar":"KD","indikatorSoal":"deskripsi indikator pencapaian kompetensi","level":"C2","kategoriKognitif":"LOTS","katakunciMateri":["kata kunci 1","kata kunci 2","kata kunci 3"],"jumlahSoal":3,"nomorSoal":"1-3"}]}
+
+Aturan: "kategoriKognitif" = "LOTS" untuk C1-C2, "MOTS" untuk C3-C4, "HOTS" untuk C5-C6. "katakunciMateri" = 3-5 konsep kunci indikator tersebut.`;
+  const text = await claude('Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional yang berpengalaman menganalisis kisi-kisi ujian Indonesia. Kembalikan HANYA JSON valid tanpa markdown.', buildContent(fc, prompt));
+  return JSON.parse(stripJSON(text));
+}
+
+async function aiAnalyzeMateri(fc, indikator, info) {
+  const list = indikator.map(i =>
+    `${i.no}. [${i.materi}] ${i.indikatorSoal} (Level ${i.level} — ${i.kategoriKognitif||'MOTS'})\n   Kata kunci: ${(i.katakunciMateri||[]).join(', ')}`
+  ).join('\n');
+  const prompt = `Kamu adalah Ahli Kurikulum yang menganalisis buku teks untuk pembuatan soal ujian.\n\n⚠️ PERINTAH: Gunakan HANYA konten dari buku/materi yang diberikan. DILARANG menggunakan pengetahuan umum.\n\nINDIKATOR:\n${list}\n\nUntuk setiap indikator ekstrak dari buku: ringkasan, fakta spesifik (min 3), stimulus HOTS (kutipan/tabel untuk soal analisis), batasan istilah teknis.\n\nKembalikan HANYA JSON:\n{"ringkasanPerIndikator":{"1":{"ringkasan":"konten dari buku","faktaSpesifik":["fakta1","fakta2","fakta3"],"stimulusHOTS":"kutipan/tabel dari buku untuk stimulus soal HOTS","batasanIstilah":["istilah1","istilah2"]}}}`;
+  const content = fc.type === 'text'
+    ? `${prompt}\n\nMATERI BUKU:\n${fc.content.slice(0, 12000)}`
+    : buildContent(fc, prompt);
+  try {
+    const text = await claude('Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional. Gunakan HANYA konten dari buku yang diberikan. Kembalikan HANYA JSON valid.', content);
+    return JSON.parse(stripJSON(text));
+  } catch { return { ringkasanPerIndikator: {} }; }
+}
+
+async function aiGenPGBatch({ info, indikator, ringkasan, start, end, prev, islami }) {
+  const n = end - start + 1;
+
+  // Filter hanya indikator yang relevan untuk range soal ini
+  const indikatorRelevant = indikator.filter(i => {
+    if (!i.nomorSoal) return true;
+    const [lo, hi] = i.nomorSoal.toString().includes('-')
+      ? i.nomorSoal.toString().split('-').map(Number)
+      : [Number(i.nomorSoal), Number(i.nomorSoal)];
+    return !(hi < start || lo > end);
+  });
+  // Fallback: jika tidak ada yang match, ambil semua (max 6 untuk hemat token)
+  const indikatorList = (indikatorRelevant.length > 0 ? indikatorRelevant : indikator).slice(0, 6);
+
+  const ilist = indikatorList.map(i => {
+    const r = ringkasan?.ringkasanPerIndikator?.[i.no];
+    const rs = typeof r === 'string' ? r : r?.ringkasan || '';
+    const fakta = r?.faktaSpesifik || [];
+    const stimulus = r?.stimulusHOTS || '';
+    const kat = i.kategoriKognitif || (i.level<='C2'?'LOTS':i.level<='C4'?'MOTS':'HOTS');
+    return `Indikator ${i.no}: [${i.materi}] — Level ${i.level} (${kat})\n  Indikator Soal: ${i.indikatorSoal}\n  Kata Kunci: ${(i.katakunciMateri||[]).join(', ')}\n  Konten Buku: ${rs.slice(0,250)}\n  Fakta: ${fakta.slice(0,2).join(' | ')}\n  Stimulus HOTS: ${stimulus.slice(0,200)}`;
+  }).join('\n\n');
+  const hitung = {A:0,B:0,C:0,D:0};
+  prev.forEach(s => { if(hitung[s.jawaban]!==undefined) hitung[s.jawaban]++; });
+  const topikPrev = prev.slice(-10).map(s=>`${s.indikator}:${s.materi}`).join(', ');
+  const islamiNote = islami ? 'Gunakan nama tokoh Islami (Ahmad, Fatimah, Malik, Aisyah) dan konteks keislaman.' : '';
+  const catatan = info.catatanTambahan ? `Catatan guru: ${info.catatanTambahan}` : '';
+
+  const prompt = `Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional untuk ujian ${info.mapel} Kelas ${info.kelas} Indonesia.
+${islamiNote}${catatan}
+
+⚠️ PRINSIP UTAMA: Gunakan HANYA konten dari kisi-kisi dan materi buku yang diberikan.
+
+UJIAN: ${info.namaUjian} | ${info.mapel} Kelas ${info.kelas}
+
+INDIKATOR DAN MATERI BUKU:
+${ilist}
+
+DISTRIBUSI JAWABAN (${prev.length} soal sebelumnya): A:${hitung.A} B:${hitung.B} C:${hitung.C} D:${hitung.D}
+⚠️ Sesuaikan batch ini agar keseluruhan MERATA.
+
+TOPIK SUDAH DIGUNAKAN (hindari pengulangan sudut pandang): ${topikPrev||'Belum ada'}
+
+TUGAS: Buat soal PG nomor ${start}–${end} (${n} soal).
+
+=== DISTRIBUSI KOGNITIF ===
+- LOTS (C1-C2): 20% = ${Math.round(n*0.2)} soal — ingat/pahami fakta dari buku
+- MOTS (C3-C4): 50% = ${Math.round(n*0.5)} soal — aplikasi/analisis dari buku
+- HOTS (C5-C6): 30% = ${Math.round(n*0.3)} soal — WAJIB gunakan stimulus (kutipan/tabel dari buku)
+
+=== ATURAN KONSTRUKSI ===
+- Semua pilihan: panjang setara, semua plausibel, TIDAK ada "semua benar/salah"
+- Pengecoh merepresentasikan kesalahan konsep yang umum
+- HOTS: isi field "stimulus" dengan kutipan/tabel dari buku (2-4 kalimat), kosongkan untuk LOTS/MOTS
+- "rasional": jelaskan MENGAPA A benar DAN mengapa B/C/D masing-masing salah
+
+Kembalikan HANYA JSON array:
+[{"no":${start},"indikator":1,"materi":"sub-topik spesifik","level":"C2","kategori":"LOTS","stimulus":"","soal":"...","pilihan":["teks A tanpa prefix","teks B","teks C","teks D"],"jawaban":"A","rasional":"A benar karena [...]. B salah karena [...]. C salah karena [...]. D salah karena [...].","pembahasan":"penjelasan lengkap untuk siswa"}]`;
+
+  const text = await claude('Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional Indonesia. Kembalikan HANYA JSON array valid tanpa markdown.', prompt, 16000);
+  return safeParseArray(text);
+}
+
+async function aiGenEssay({ info, indikator, ringkasan, jumlah, islami }) {
+  const ilist = indikator.map(i => {
+    const r = ringkasan?.ringkasanPerIndikator?.[i.no];
+    const rs = typeof r === 'string' ? r : r?.ringkasan || '';
+    const fakta = r?.faktaSpesifik || [];
+    const stimulus = r?.stimulusHOTS || '';
+    const kat = i.kategoriKognitif || (i.level<='C2'?'LOTS':i.level<='C4'?'MOTS':'HOTS');
+    return `${i.no}. [${i.materi}] ${i.indikatorSoal} — Level ${i.level} (${kat})\n   Konten Buku: ${rs.slice(0,250)}\n   Fakta Spesifik: ${fakta.slice(0,3).join(' | ')}\n   Stimulus Tersedia: ${stimulus.slice(0,200)}`;
+  }).join('\n\n');
+  const islamiNote = islami ? 'Gunakan nama tokoh Islami dan konteks keislaman.' : '';
+  const catatan = info.catatanTambahan ? `Catatan guru: ${info.catatanTambahan}` : '';
+
+  const prompt = `Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional untuk ujian ${info.mapel} Kelas ${info.kelas} Indonesia.
+${islamiNote}${catatan}
+
+⚠️ PRINSIP UTAMA: Gunakan HANYA konten dari kisi-kisi dan materi buku yang diberikan.
+
+INDIKATOR DAN MATERI BUKU:
+${ilist}
+
+TUGAS: Buat ${jumlah} soal essay untuk ${info.namaUjian}.
+
+Setiap soal WAJIB memiliki:
+- "stimulus": paragraf/kasus/data dari buku (2-5 kalimat) sebagai konteks — WAJIB ADA
+- "soal": pertanyaan mengacu stimulus, mendorong analisis/evaluasi/sintesis (minimal C4)
+- "rubrik": minimal 3 kriteria penilaian objektif dan terukur
+- Total skor semua soal = 100
+
+Kembalikan HANYA JSON array:
+[{"no":1,"tipe":"essay","indikator":1,"materi":"sub-topik spesifik","level":"C5","kategori":"HOTS","stimulus":"paragraf/wacana/data dari buku (WAJIB ADA)","soal":"pertanyaan yang mengacu stimulus","petunjuk":"instruksi jelas untuk siswa","skor":20,"kunci":"kunci jawaban lengkap ideal","rubrik":[{"kriteria":"kriteria spesifik 1","skor":8},{"kriteria":"kriteria spesifik 2","skor":7},{"kriteria":"kriteria kedalaman analisis","skor":5}]}]`;
+
+  const text = await claude('Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional Indonesia. Kembalikan HANYA JSON array valid.', prompt, 12000);
+  return safeParseArray(text);
+}
+
+// ══════════════════════════════════════════════════════════
+//  STEPS UI
+// ══════════════════════════════════════════════════════════
+const STEP_DEF = [
+  { id:'readKK',      label:'Membaca file kisi-kisi' },
+  { id:'analyzeKK',   label:'Menganalisis kisi-kisi dengan AI' },
+  { id:'readMat',     label:'Membaca file materi' },
+  { id:'analyzeMat',  label:'Menganalisis materi per indikator' },
+  { id:'genPG',       label:'Membuat soal Pilihan Ganda' },
+  { id:'genEssay',    label:'Membuat soal Essay' },
+  { id:'buildDocs',   label:'Membuat dokumen DOCX' },
+];
+
+function initSteps(hasMat, hasPG, hasEssay) {
+  activeSteps = STEP_DEF.filter(s => {
+    if (s.id === 'readMat' || s.id === 'analyzeMat') return hasMat;
+    if (s.id === 'genPG')    return hasPG;
+    if (s.id === 'genEssay') return hasEssay;
+    return true;
+  });
+  document.getElementById('stepsList').innerHTML = activeSteps.map(s => `
+    <div class="step-row" id="row_${s.id}">
+      <div class="step-icon pending" id="ico_${s.id}">⏳</div>
+      <div class="step-info">
+        <div class="step-label">${s.label}</div>
+        <div class="step-detail" id="det_${s.id}">Menunggu...</div>
+      </div>
+    </div>`).join('');
+}
+
+function setStep(id, state, detail) {
+  const ico = document.getElementById(`ico_${id}`);
+  const det = document.getElementById(`det_${id}`);
+  if (!ico) return;
+  const map = { pending:['pending','⏳'], running:['running','⏳'], done:['done','✅'], err:['err','❌'] };
+  const [cls, em] = map[state] || map.pending;
+  ico.className = `step-icon ${cls}`;
+  ico.textContent = em;
+  if (detail && det) det.textContent = detail;
+}
+
+// ══════════════════════════════════════════════════════════
+//  LOG
+// ══════════════════════════════════════════════════════════
+function log(msg, type='') {
+  const box = document.getElementById('logBox');
+  const d = document.createElement('div');
+  d.className = `log-line ${type==='ok'?'log-ok':type==='warn'?'log-warn':type==='err'?'log-err':'log-info'}`;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+}
+
+function toggleLog() {
+  document.getElementById('logBox').classList.toggle('show');
+}
+
+// ══════════════════════════════════════════════════════════
+//  FLASH ALERT
+// ══════════════════════════════════════════════════════════
+function flash(msg, type='info') {
+  const box = document.getElementById('alertBox');
+  box.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { box.innerHTML = ''; }, 6000);
+}
+
+// ══════════════════════════════════════════════════════════
+//  DOCX BUILDER  (browser UMD: window.docx)
+// ══════════════════════════════════════════════════════════
+const DC = {
+  FONT:'Times New Roman', FS:21, FSS:20, PW:11906, PH:16838, MRG:851,
+  LABELS:['A','B','C','D'],
+  WARNA:{A:'C6EFCE',B:'BDD7EE',C:'FFEB9C',D:'FFCCAA'},
+  HL:{A:'green',B:'cyan',C:'yellow',D:'darkYellow'}
+};
+
+function D() { return window.docx; }
+
+function NB() {
+  const nb={style:D().BorderStyle.NONE,size:0,color:'FFFFFF'};
+  return {top:nb,bottom:nb,left:nb,right:nb};
+}
+
+function identLine(label) {
+  const {Paragraph,TextRun}=D();
+  return new Paragraph({spacing:{before:28,after:28,line:252},children:[
+    new TextRun({text:label,font:DC.FONT,size:DC.FS,bold:true}),
+    new TextRun({text:' : ',font:DC.FONT,size:DC.FS}),
+    new TextRun({text:'.'.repeat(38),font:DC.FONT,size:DC.FS}),
+  ]});
+}
+
+function buatHeader(INFO) {
+  const {Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,BorderStyle,WidthType}=D();
+  const tw=DC.PW-DC.MRG*2, ci=Math.round(tw*0.56), cg=120, cb=tw-ci-cg;
+  const bb={style:BorderStyle.SINGLE,size:6,color:'000000'};
+  const bord={top:bb,bottom:bb,left:bb,right:bb};
+  const nb=NB();
+  return [
+    new Table({width:{size:tw,type:WidthType.DXA},columnWidths:[ci,cg,cb],rows:[new TableRow({children:[
+      new TableCell({borders:nb,width:{size:ci,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:60},children:[
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:20},children:[new TextRun({text:INFO.sekolah,font:DC.FONT,size:28,bold:true})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:14},children:[new TextRun({text:'─'.repeat(48),font:DC.FONT,size:16})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:14},children:[new TextRun({text:INFO.subtitle,font:DC.FONT,size:26,bold:true})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:14},children:[new TextRun({text:INFO.tahunAjaran,font:DC.FONT,size:DC.FS})]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[
+          new TextRun({text:'Mata Pelajaran : ',font:DC.FONT,size:DC.FS,bold:true}),
+          new TextRun({text:INFO.mapel,font:DC.FONT,size:DC.FS}),
+        ]}),
+        new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:0},children:[
+          new TextRun({text:'Kelas : ',font:DC.FONT,size:DC.FS,bold:true}),
+          new TextRun({text:`${INFO.kelas}   `,font:DC.FONT,size:DC.FS}),
+          new TextRun({text:'Waktu : ',font:DC.FONT,size:DC.FS,bold:true}),
+          new TextRun({text:INFO.waktu,font:DC.FONT,size:DC.FS}),
+        ]}),
+      ]}),
+      new TableCell({borders:nb,width:{size:cg,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:0},children:[new Paragraph({children:[]})]}),
+      new TableCell({borders:bord,width:{size:cb,type:WidthType.DXA},margins:{top:80,bottom:80,left:140,right:100},
+        children:[identLine('Nama      '),identLine('Kelas     '),identLine('No. Absen '),identLine('Hari/Tgl  ')]}),
+    ]})]
+    }),
+    new Paragraph({spacing:{before:80,after:0},border:{bottom:{style:BorderStyle.DOUBLE,size:6,color:'000000',space:1}},children:[]}),
+    new Paragraph({spacing:{before:60,after:80},children:[
+      new TextRun({text:'Petunjuk: ',font:DC.FONT,size:DC.FS,bold:true}),
+      new TextRun({text:INFO.petunjuk,font:DC.FONT,size:DC.FS,italics:true}),
+    ]}),
+  ];
+}
+
+// Konfigurasi numbering otomatis Word untuk satu kolom
+function buatNumConfig(ref, start) {
+  const {AlignmentType}=D();
+  return {
+    reference: ref,
+    levels: [{
+      level: 0,
+      format: 'decimal',   // 1, 2, 3...
+      text: '%1.',          // format tampil: "1.", "2.", dst
+      alignment: AlignmentType.LEFT,
+      start,
+      suffix: 'space',      // <w:suff w:val="space"/> — bukan tab default
+      style: {
+        paragraph: {
+          indent: { left: 440, hanging: 440 }, // hanging: teks soal rata di 440
+          spacing: { before: 120, after: 0, line: 280 }
+        },
+        run: { font: DC.FONT, bold: true, size: DC.FS }
+      }
+    }]
+  };
+}
+
+function renderStimulus(teks) {
+  const {Paragraph,TextRun,Table,TableRow,TableCell,BorderStyle,WidthType,ShadingType}=D();
+  const bS={style:BorderStyle.SINGLE,size:4,color:'4472C4'};
+  const tw=DC.PW-DC.MRG*2;
+  return new Table({width:{size:tw,type:WidthType.DXA},rows:[new TableRow({children:[
+    new TableCell({
+      borders:{top:bS,bottom:bS,left:bS,right:bS},
+      shading:{fill:'EBF3FB',type:ShadingType.CLEAR},
+      margins:{top:80,bottom:80,left:120,right:120},
+      children:[new Paragraph({spacing:{before:0,after:0,line:252},children:[
+        new TextRun({text:teks,font:DC.FONT,size:DC.FSS,italics:true,color:'1F3864'})
+      ]})]
+    })
+  ]})]});
+}
+
+// numRef: "num-kiri" atau "num-kanan" sesuai kolom
+function renderPG(s, numRef) {
+  const {Paragraph,TextRun}=D();
+  const items=[];
+
+  // Stimulus (HOTS) — kotak biru sebelum soal
+  if(s.stimulus && s.stimulus.trim()) {
+    items.push(renderStimulus(s.stimulus.trim()));
+    items.push(new Paragraph({spacing:{before:20,after:0},children:[]}));
+  }
+
+  // Teks soal — gunakan Word auto-numbering (TANPA nomor di teks)
+  items.push(new Paragraph({
+    numbering:{ reference: numRef, level: 0 },
+    children:[new TextRun({text:s.soal,font:DC.FONT,size:DC.FS})]
+  }));
+
+  // Pilihan jawaban — indent 440 agar sejajar teks soal
+  s.pilihan.forEach((opt,i)=>{
+    const teks=opt.startsWith(`${DC.LABELS[i]}.`)?opt.slice(2).trim():opt;
+    items.push(new Paragraph({spacing:{before:28,after:0,line:252},indent:{left:440},children:[
+      new TextRun({text:`${DC.LABELS[i]}.  `,font:DC.FONT,size:DC.FSS,bold:true}),
+      new TextRun({text:teks,font:DC.FONT,size:DC.FSS}),
+    ]}));
+  });
+
+  items.push(new Paragraph({spacing:{before:0,after:60},children:[]}));
+  return items;
+}
+
+// Kembalikan { half, table } agar buildSoalPG tahu posisi kolom kanan
+function soal2Kolom(soal) {
+  const {Paragraph,Table,TableRow,TableCell,BorderStyle,WidthType}=D();
+  const tw=DC.PW-DC.MRG*2, div=160, cw=Math.floor((tw-div)/2);
+  const half=Math.ceil(soal.length/2);
+  // Kolom kiri: num-kiri (mulai 1), kolom kanan: num-kanan (mulai half+1)
+  const left=soal.slice(0,half).flatMap(s=>renderPG(s,'num-kiri'));
+  const right=soal.slice(half).flatMap(s=>renderPG(s,'num-kanan'));
+  const nb=NB(); const nb1={style:D().BorderStyle.NONE,size:0,color:'FFFFFF'};
+  const dv={style:BorderStyle.SINGLE,size:6,color:'888888'};
+  return {
+    half,
+    table: new Table({width:{size:tw,type:WidthType.DXA},columnWidths:[cw,div,cw],rows:[new TableRow({children:[
+      new TableCell({borders:nb,width:{size:cw,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:80},children:left}),
+      new TableCell({borders:{top:nb1,bottom:nb1,left:dv,right:dv},width:{size:div,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:0},children:[new Paragraph({children:[]})]}),
+      new TableCell({borders:nb,width:{size:cw,type:WidthType.DXA},margins:{top:0,bottom:0,left:80,right:0},children:right}),
+    ]})]})
+  };
+}
+
+async function buildSoalPG(info, soalPG) {
+  const {Document,Packer,Paragraph,TextRun,Footer,AlignmentType,PageNumber}=D();
+  const INFO={...info,subtitle:info.namaUjian,petunjuk:'Berilah tanda silang (X) pada huruf A, B, C, atau D di depan jawaban yang paling benar!'};
+  const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[
+    new TextRun({text:`${info.mapel}  |  Kelas ${info.kelas}  |  ${info.namaUjian}  |  Halaman `,font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.CURRENT],font:DC.FONT,size:18}),
+    new TextRun({text:' dari ',font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.TOTAL_PAGES],font:DC.FONT,size:18}),
+  ]})]});
+  const {half, table}=soal2Kolom(soalPG);
+  const doc=new Document({
+    // Penomoran otomatis Word: kiri mulai 1, kanan mulai half+1
+    numbering:{ config:[buatNumConfig('num-kiri',1), buatNumConfig('num-kanan',half+1)] },
+    sections:[{
+      properties:{page:{size:{width:DC.PW,height:DC.PH},margin:{top:DC.MRG,right:DC.MRG,bottom:DC.MRG+200,left:DC.MRG}}},
+      footers:{default:footer},
+      children:[...buatHeader(INFO), table]
+    }]
+  });
+  return D().Packer.toBlob(doc);
+}
+
+async function buildSoalEssay(info, soalEssay) {
+  const {Document,Packer,Paragraph,TextRun,Footer,AlignmentType,PageNumber,BorderStyle}=D();
+  const INFO={...info,subtitle:`${info.namaUjian} — SOAL ESSAY`,petunjuk:'Jawablah pertanyaan-pertanyaan berikut dengan jelas dan lengkap pada tempat yang disediakan!'};
+  const garisJwb=skor=>Array.from({length:Math.max(3,Math.floor(skor/5)+2)},()=>
+    new Paragraph({spacing:{before:0,after:160},border:{bottom:{style:BorderStyle.SINGLE,size:2,color:'AAAAAA',space:1}},children:[new TextRun({text:'',font:DC.FONT,size:DC.FS})]})
+  );
+  const items=soalEssay.flatMap(s=>{
+    const parts=[];
+    if(s.stimulus && s.stimulus.trim()) {
+      parts.push(renderStimulus(s.stimulus.trim()));
+      parts.push(new Paragraph({spacing:{before:20,after:0},children:[]}));
+    }
+    // Nomor essay pakai auto-numbering Word (tanpa "1." di teks)
+    parts.push(new Paragraph({
+      numbering:{reference:'num-essay',level:0},
+      children:[
+        new TextRun({text:`(Skor: ${s.skor})  `,font:DC.FONT,size:DC.FSS,italics:true}),
+        new TextRun({text:s.soal,font:DC.FONT,size:DC.FS}),
+      ]
+    }));
+    if(s.petunjuk) parts.push(new Paragraph({spacing:{before:0,after:40},indent:{left:440},children:[new TextRun({text:`Petunjuk: ${s.petunjuk}`,font:DC.FONT,size:DC.FSS,italics:true,color:'555555'})]}));
+    parts.push(...garisJwb(s.skor));
+    return parts;
+  });
+  const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[
+    new TextRun({text:`${info.mapel}  |  Kelas ${info.kelas}  |  Soal Essay  |  Halaman `,font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.CURRENT],font:DC.FONT,size:18}),
+    new TextRun({text:' dari ',font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.TOTAL_PAGES],font:DC.FONT,size:18}),
+  ]})]});
+  const doc=new Document({
+    numbering:{ config:[buatNumConfig('num-essay',1)] },
+    sections:[{
+      properties:{page:{size:{width:DC.PW,height:DC.PH},margin:{top:DC.MRG,right:DC.MRG,bottom:DC.MRG+200,left:DC.MRG}}},
+      footers:{default:footer},children:[...buatHeader(INFO),...items]
+    }]
+  });
+  return D().Packer.toBlob(doc);
+}
+
+async function buildKunci(info, soalPG, soalEssay) {
+  const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,Footer,AlignmentType,BorderStyle,WidthType,ShadingType,UnderlineType,PageNumber}=D();
+  const tw=DC.PW-DC.MRG*2; const nb=NB(); const nb1={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
+
+  function tabelKunci(soal) {
+    const cn=700,cj=1320,cws=Array(8).fill(0).map((_,i)=>i%2===0?cn:cj);
+    const tw2=cws.reduce((a,b)=>a+b,0);
+    const bH={style:BorderStyle.SINGLE,size:8,color:'1F497D'};
+    const bD={style:BorderStyle.SINGLE,size:4,color:'999999'};
+    const bH4={top:bH,bottom:bH,left:bH,right:bH};
+    const bD4={top:bD,bottom:bD,left:bD,right:bD};
+    const hc=(t,w)=>new TableCell({borders:bH4,width:{size:w,type:WidthType.DXA},shading:{fill:'1F497D',type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:t,bold:true,size:22,color:'FFFFFF',font:DC.FONT})]})]});
+    const hrow=new TableRow({children:Array(4).fill(null).flatMap(()=>[hc('No.',cn),hc('Jawaban',cj)])});
+    const pk=Math.ceil(soal.length/4);
+    const rows=[];
+    for(let r=0;r<pk;r++){
+      const cells=[];
+      for(let c=0;c<4;c++){
+        const idx=r+c*pk;
+        if(idx<soal.length){
+          const s=soal[idx];
+          cells.push(new TableCell({borders:bD4,width:{size:cn,type:WidthType.DXA},margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:`${s.no}.`,size:DC.FS,font:DC.FONT})]})]}));
+          cells.push(new TableCell({borders:bD4,width:{size:cj,type:WidthType.DXA},shading:{fill:DC.WARNA[s.jawaban],type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:s.jawaban,bold:true,size:22,font:DC.FONT})]})]}));
+        } else {
+          cells.push(new TableCell({borders:bD4,width:{size:cn,type:WidthType.DXA},margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({children:[]})]}));
+          cells.push(new TableCell({borders:bD4,width:{size:cj,type:WidthType.DXA},margins:{top:80,bottom:80,left:80,right:80},children:[new Paragraph({children:[]})]}));
+        }
+      }
+      rows.push(new TableRow({children:cells}));
+    }
+    return new Table({width:{size:tw2,type:WidthType.DXA},columnWidths:cws,rows:[hrow,...rows]});
+  }
+
+  function pembahasan2Kolom(soal) {
+    const div=160,cwp=Math.floor((tw-div)/2);
+    const bPD={style:BorderStyle.SINGLE,size:4,color:'888888'};
+    const rend=list=>{
+      const p=[];
+      for(const s of list){
+        p.push(new Paragraph({spacing:{before:80,after:16},children:[
+          new TextRun({text:`Soal ${s.no}. `,bold:true,size:DC.FS,font:DC.FONT}),
+          new TextRun({text:'Jawaban: ',size:DC.FS,font:DC.FONT}),
+          new TextRun({text:` ${s.jawaban} `,bold:true,size:DC.FS,font:DC.FONT,highlight:DC.HL[s.jawaban]}),
+        ]}));
+        p.push(new Paragraph({spacing:{before:0,after:40},indent:{left:280},children:[new TextRun({text:s.pembahasan,font:DC.FONT,size:DC.FSS})]}));
+      }
+      return p;
+    };
+    const half=Math.ceil(soal.length/2);
+    return new Table({width:{size:tw,type:WidthType.DXA},columnWidths:[cwp,div,cwp],rows:[new TableRow({children:[
+      new TableCell({borders:nb,width:{size:cwp,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:80},children:rend(soal.slice(0,half))}),
+      new TableCell({borders:{top:nb1,bottom:nb1,left:bPD,right:bPD},width:{size:div,type:WidthType.DXA},margins:{top:0,bottom:0,left:0,right:0},children:[new Paragraph({children:[]})]}),
+      new TableCell({borders:nb,width:{size:cwp,type:WidthType.DXA},margins:{top:0,bottom:0,left:80,right:0},children:rend(soal.slice(half))}),
+    ]})]});
+  }
+
+  function kunciEssay(soalEssay) {
+    const items=[];
+    const bR={style:BorderStyle.SINGLE,size:4,color:'BBBBBB'};
+    const bR4={top:bR,bottom:bR,left:bR,right:bR};
+    soalEssay.forEach(s=>{
+      items.push(new Paragraph({spacing:{before:120,after:20},border:{bottom:{style:BorderStyle.SINGLE,size:2,color:'1F497D',space:2}},children:[
+        new TextRun({text:`Soal ${s.no}. `,bold:true,size:DC.FS,font:DC.FONT}),
+        new TextRun({text:`(Skor Maks: ${s.skor})`,size:DC.FSS,font:DC.FONT,italics:true}),
+      ]}));
+      items.push(new Paragraph({spacing:{before:60,after:20},children:[new TextRun({text:s.soal,font:DC.FONT,size:DC.FSS,italics:true,color:'444444'})]}));
+      items.push(new Paragraph({spacing:{before:40,after:20},children:[new TextRun({text:'Kunci Jawaban:',bold:true,size:DC.FS,font:DC.FONT,color:'1F497D'})]}));
+      items.push(new Paragraph({spacing:{before:0,after:60},indent:{left:280},children:[new TextRun({text:s.kunci,font:DC.FONT,size:DC.FSS})]}));
+      if(s.rubrik?.length){
+        const c1=6000,c2=1200;
+        items.push(new Paragraph({spacing:{before:20,after:10},children:[new TextRun({text:'Rubrik Penilaian:',bold:true,size:DC.FSS,font:DC.FONT})]}));
+        items.push(new Table({width:{size:c1+c2,type:WidthType.DXA},columnWidths:[c1,c2],rows:[
+          new TableRow({children:[
+            new TableCell({borders:bR4,shading:{fill:'1F497D',type:ShadingType.CLEAR},width:{size:c1,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[new TextRun({text:'Kriteria',bold:true,size:DC.FSS,font:DC.FONT,color:'FFFFFF'})]})]}),
+            new TableCell({borders:bR4,shading:{fill:'1F497D',type:ShadingType.CLEAR},width:{size:c2,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'Skor',bold:true,size:DC.FSS,font:DC.FONT,color:'FFFFFF'})]})]}),
+          ]}),
+          ...s.rubrik.map(r=>new TableRow({children:[
+            new TableCell({borders:bR4,width:{size:c1,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({children:[new TextRun({text:r.kriteria,font:DC.FONT,size:DC.FSS})]})]}),
+            new TableCell({borders:bR4,width:{size:c2,type:WidthType.DXA},margins:{top:60,bottom:60,left:100,right:100},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:`${r.skor}`,font:DC.FONT,size:DC.FSS})]})]}),
+          ]})),
+        ]}));
+      }
+    });
+    return items;
+  }
+
+  const ch=[];
+  ch.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:20},children:[new TextRun({text:info.sekolah,font:DC.FONT,size:28,bold:true})]}));
+  ch.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:20},children:[new TextRun({text:'KUNCI JAWABAN & PEMBAHASAN',font:DC.FONT,size:36,bold:true})]}));
+  ch.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:14},children:[new TextRun({text:`${info.namaUjian}  |  ${info.mapel}  Kelas ${info.kelas}  |  ${info.tahunAjaran}`,font:DC.FONT,size:DC.FSS,underline:{type:UnderlineType.SINGLE}})]}));
+  ch.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:0,after:100},children:[new TextRun({text:`Penyusun: ${info.penyusun}`,font:DC.FONT,size:DC.FSS})]}));
+  ch.push(new Paragraph({spacing:{before:0,after:8},children:[new TextRun({text:'⚠️ DOKUMEN INI HANYA UNTUK GURU — RAHASIA',bold:true,size:DC.FS,font:DC.FONT,color:'CC0000'})]}));
+  ch.push(new Paragraph({spacing:{before:20,after:80},border:{bottom:{style:BorderStyle.SINGLE,size:8,color:'1F497D',space:1}},children:[]}));
+
+  if(soalPG.length>0){
+    ch.push(new Paragraph({spacing:{before:60,after:60},children:[new TextRun({text:'BAGIAN A — PILIHAN GANDA',font:DC.FONT,size:26,bold:true,color:'1F497D'})]}));
+    ch.push(tabelKunci(soalPG));
+    ch.push(new Paragraph({spacing:{before:80,after:40},children:[
+      new TextRun({text:'Legenda:  ',bold:true,size:19,font:DC.FONT}),
+      new TextRun({text:'  A  ',size:19,font:DC.FONT,highlight:'green'}),
+      new TextRun({text:'  B  ',size:19,font:DC.FONT,highlight:'cyan'}),
+      new TextRun({text:'  C  ',size:19,font:DC.FONT,highlight:'yellow'}),
+      new TextRun({text:'  D  ',size:19,font:DC.FONT,highlight:'darkYellow'}),
+    ]}));
+    ch.push(new Paragraph({spacing:{before:80,after:120},border:{bottom:{style:BorderStyle.SINGLE,size:6,color:'1F497D',space:1}},children:[]}));
+    ch.push(new Paragraph({spacing:{before:80,after:100},children:[new TextRun({text:'PEMBAHASAN SOAL PG',font:DC.FONT,size:26,bold:true,color:'1F497D'})]}));
+    ch.push(pembahasan2Kolom(soalPG));
+  }
+  if(soalEssay.length>0){
+    ch.push(new Paragraph({spacing:{before:160,after:80},border:{top:{style:BorderStyle.DOUBLE,size:6,color:'1F497D',space:2}},children:[new TextRun({text:'BAGIAN B — KUNCI JAWABAN ESSAY',font:DC.FONT,size:26,bold:true,color:'1F497D'})]}));
+    ch.push(...kunciEssay(soalEssay));
+  }
+
+  const footer=new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[
+    new TextRun({text:`KUNCI — ${info.mapel}  |  Kelas ${info.kelas}  |  ${info.namaUjian}  |  Halaman `,font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.CURRENT],font:DC.FONT,size:18}),
+    new TextRun({text:' dari ',font:DC.FONT,size:18}),
+    new TextRun({children:[PageNumber.TOTAL_PAGES],font:DC.FONT,size:18}),
+  ]})]});
+  const doc=new Document({sections:[{
+    properties:{page:{size:{width:DC.PW,height:DC.PH},margin:{top:DC.MRG,right:DC.MRG,bottom:DC.MRG+200,left:DC.MRG}}},
+    footers:{default:footer},children:ch
+  }]});
+  return D().Packer.toBlob(doc);
+}
+
+// ══════════════════════════════════════════════════════════
+//  MAIN GENERATE
+// ══════════════════════════════════════════════════════════
+async function startGenerate() {
+  // Validasi
+  if (!S.apiKey) { toggleSettings(); flash('❌ Masukkan API Key di menu Pengaturan terlebih dahulu!', 'error'); return; }
+  if (!document.getElementById('mapel').value.trim()) { flash('❌ Mata pelajaran wajib diisi!', 'error'); return; }
+  if (!document.getElementById('kelas').value.trim())  { flash('❌ Kelas wajib diisi!', 'error'); return; }
+  if (!S.kkFile) { flash('❌ File kisi-kisi wajib diupload!', 'error'); return; }
+
+  // Kumpul info
+  const schoolId = document.getElementById('schoolSel').value;
+  const school   = S.schools.find(s => s.id == schoolId) || {};
+  const jenis    = S.jenis;
+  const jumlahPG    = (jenis==='pg'||jenis==='campuran') ? parseInt(document.getElementById('jumlahPG').value) : 0;
+  const jumlahEssay = (jenis==='essay'||jenis==='campuran') ? parseInt(document.getElementById('jumlahEssay').value) : 0;
+  const jenisUjian  = document.getElementById('jenisUjian').value;
+  const semester    = document.getElementById('semester').value;
+  const tahunAjaran = document.getElementById('tahunAjaran').value;
+
+  S.info = {
+    sekolah:       school.nama || 'Sekolah',
+    mapel:         document.getElementById('mapel').value.trim(),
+    kelas:         document.getElementById('kelas').value.trim(),
+    semester,
+    tahunAjaran,
+    namaUjian:     `${jenisUjian} ${semester} ${tahunAjaran}`,
+    waktu:         `${document.getElementById('waktu').value} Menit`,
+    penyusun:      document.getElementById('penyusun').value.trim(),
+    catatanTambahan: document.getElementById('catatan').value.trim() || null,
+    jumlahPG,
+    jumlahEssay,
+    konteksIslami: school.konteksIslami || false,
+  };
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sedang generate...';
+
+  const pw = document.getElementById('progWrap');
+  pw.classList.add('show');
+  pw.scrollIntoView({ behavior:'smooth' });
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('logBox').innerHTML = '';
+  S.blobs = {}; S.soalPG = []; S.soalEssay = [];
+
+  initSteps(!!S.matFile, jumlahPG > 0, jumlahEssay > 0);
+
+  try {
+    // 1. Baca kisi-kisi
+    setStep('readKK','running','Membaca file...');
+    log(`Membaca kisi-kisi: ${S.kkFile.name}`);
+    S.kkContent = await readFileContent(S.kkFile);
+    setStep('readKK','done',`Format: ${S.kkContent.type}`);
+    log('File kisi-kisi siap','ok');
+
+    // 2. Analisis kisi-kisi
+    setStep('analyzeKK','running','Mengirim ke Claude AI...');
+    log('Menganalisis kisi-kisi dengan AI...');
+    const strukturKisi = await aiAnalyzeKisiKisi(S.kkContent, S.info);
+    setStep('analyzeKK','done',`${strukturKisi.indikator?.length || 0} indikator ditemukan`);
+    log(`Ditemukan ${strukturKisi.indikator?.length || 0} indikator`,'ok');
+
+    // 3-4. Materi (opsional)
+    let ringkasan = {};
+    if (S.matFile) {
+      setStep('readMat','running','Membaca file materi...');
+      log(`Membaca materi: ${S.matFile.name}`);
+      S.matContent = await readFileContent(S.matFile);
+      setStep('readMat','done',`Format: ${S.matContent.type}`);
+      log('File materi siap','ok');
+
+      setStep('analyzeMat','running','Menganalisis materi per indikator...');
+      log('Menganalisis materi dengan AI...');
+      ringkasan = await aiAnalyzeMateri(S.matContent, strukturKisi.indikator, S.info);
+      setStep('analyzeMat','done','Ringkasan materi selesai');
+      log('Analisis materi selesai','ok');
+    }
+
+    // 5. Generate PG
+    if (jumlahPG > 0) {
+      setStep('genPG','running',`Membuat ${jumlahPG} soal PG...`);
+      const totalBatch = Math.ceil(jumlahPG / 10);
+      for (let b = 0; b < totalBatch; b++) {
+        const start = b*10+1, end = Math.min(start+9, jumlahPG);
+        document.getElementById('det_genPG').textContent = `Batch ${b+1}/${totalBatch}: soal ${start}–${end}...`;
+        log(`Generate soal PG ${start}–${end}...`);
+        const batch = await aiGenPGBatch({
+          info: S.info, indikator: strukturKisi.indikator,
+          ringkasan, start, end, prev: S.soalPG, islami: S.info.konteksIslami
+        });
+        S.soalPG = [...S.soalPG, ...batch];
+        log(`Soal PG ${start}–${end} selesai ✅`,'ok');
+      }
+      // Validasi distribusi
+      const dist={A:0,B:0,C:0,D:0};
+      S.soalPG.forEach(s=>{ if(dist[s.jawaban]!==undefined) dist[s.jawaban]++; });
+      const total=S.soalPG.length;
+      Object.entries(dist).forEach(([h,n])=>log(`Jawaban ${h}: ${n} soal (${(n/total*100).toFixed(0)}%)`,Math.abs(n-total/4)<=total*0.15?'ok':'warn'));
+      setStep('genPG','done',`${S.soalPG.length} soal PG selesai`);
+    }
+
+    // 6. Generate Essay
+    if (jumlahEssay > 0) {
+      setStep('genEssay','running',`Membuat ${jumlahEssay} soal Essay...`);
+      log(`Generate ${jumlahEssay} soal Essay...`);
+      S.soalEssay = await aiGenEssay({
+        info: S.info, indikator: strukturKisi.indikator,
+        ringkasan, jumlah: jumlahEssay, islami: S.info.konteksIslami
+      });
+      setStep('genEssay','done',`${S.soalEssay.length} soal Essay selesai`);
+      log(`${S.soalEssay.length} soal Essay selesai ✅`,'ok');
+    }
+
+    // 7. Build DOCX
+    setStep('buildDocs','running','Membuat file DOCX...');
+    if (S.soalPG.length > 0) {
+      log('Membuat soal PG.docx...');
+      S.blobs.pg = await buildSoalPG(S.info, S.soalPG);
+      log('Soal PG.docx selesai ✅','ok');
+    }
+    if (S.soalEssay.length > 0) {
+      log('Membuat soal Essay.docx...');
+      S.blobs.essay = await buildSoalEssay(S.info, S.soalEssay);
+      log('Essay.docx selesai ✅','ok');
+    }
+    log('Membuat kunci jawaban.docx...');
+    S.blobs.kunci = await buildKunci(S.info, S.soalPG, S.soalEssay);
+    log('Kunci jawaban.docx selesai ✅','ok');
+
+    setStep('buildDocs','done','Semua dokumen siap didownload!');
+    showResults();
+
+  } catch (err) {
+    console.error(err);
+    log(`ERROR: ${err.message}`,'err');
+    flash(`❌ ${err.message}`, 'error');
+    activeSteps.forEach(s => {
+      const ico = document.getElementById(`ico_${s.id}`);
+      if (ico && ico.classList.contains('running')) setStep(s.id,'err',err.message);
+    });
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Generate Soal Sekarang';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════════════════
+function showResults() {
+  const rw = document.getElementById('resultsWrap');
+  rw.classList.add('show');
+  rw.scrollIntoView({ behavior:'smooth' });
+
+  S.sessionId = `${S.info.mapel.replace(/\s+/g,'_')}_${S.info.kelas}_${Date.now()}`;
+
+  // Distribusi PG
+  if (S.soalPG.length > 0) {
+    const dist={A:0,B:0,C:0,D:0};
+    S.soalPG.forEach(s=>{ if(dist[s.jawaban]!==undefined) dist[s.jawaban]++; });
+    const total=S.soalPG.length;
+    const CLR={A:'#34a853',B:'#1a73e8',C:'#f9ab00',D:'#ea4335'};
+    document.getElementById('distDisplay').innerHTML = `
+      <div style="font-weight:700;font-size:0.88rem;margin-bottom:6px">📊 Distribusi Jawaban PG (${total} soal):</div>
+      <div class="dist-bar">
+        ${Object.entries(dist).map(([h,n])=>`<div class="dist-seg" style="width:${(n/total*100).toFixed(1)}%;background:${CLR[h]}">${h}:${n}</div>`).join('')}
+      </div>
+      <div class="dist-legend">
+        ${Object.entries(dist).map(([h,n])=>`<span><b style="color:${CLR[h]}">${h}</b>: ${n} (${(n/total*100).toFixed(0)}%)</span>`).join('')}
+      </div>`;
+  } else {
+    document.getElementById('distDisplay').innerHTML = '';
+  }
+
+  if (S.blobs.pg)    { document.getElementById('dlPG').disabled    = false; }
+  if (S.blobs.essay) { document.getElementById('dlEssay').disabled = false; }
+  if (S.blobs.kunci) { document.getElementById('dlKunci').disabled = false; }
+}
+
+function dlFile(type) {
+  const blob = S.blobs[type];
+  if (!blob) return;
+  const names = {
+    pg:    `soal_${S.info.mapel}_${S.info.kelas}_${S.sessionId}.docx`,
+    essay: `essay_${S.info.mapel}_${S.info.kelas}_${S.sessionId}.docx`,
+    kunci: `kunci_${S.info.mapel}_${S.info.kelas}_${S.sessionId}.docx`,
+  };
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = names[type]; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  S.kkFile=null; S.matFile=null; S.kkContent=null; S.matContent=null;
+  S.soalPG=[]; S.soalEssay=[]; S.blobs={}; S.sessionId='';
+  document.getElementById('fileKisiKisi').value = '';
+  document.getElementById('fileMateri').value   = '';
+  document.getElementById('nameKisiKisi').textContent = 'Belum ada file dipilih';
+  document.getElementById('nameMateri').textContent   = 'Belum ada file dipilih';
+  document.getElementById('upKisiKisi').classList.remove('has-file');
+  document.getElementById('upMateri').classList.remove('has-file');
+  document.getElementById('progWrap').classList.remove('show');
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('dlPG').disabled    = true;
+  document.getElementById('dlEssay').disabled = true;
+  document.getElementById('dlKunci').disabled = true;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>
