@@ -986,10 +986,16 @@ TUGAS: Buat soal PG nomor ${start}–${end} (${n} soal).
 - Semua pilihan: panjang setara, semua plausibel, TIDAK ada "semua benar/salah"
 - Pengecoh merepresentasikan kesalahan konsep yang umum
 - HOTS: isi field "stimulus" dengan kutipan/tabel dari buku (2-4 kalimat), kosongkan untuk LOTS/MOTS
-- "rasional": jelaskan MENGAPA A benar DAN mengapa B/C/D masing-masing salah
+- "rasional": jelaskan MENGAPA jawaban benar DAN mengapa pilihan lain salah (sesuaikan dengan field "jawaban", bukan selalu A)
+
+⚠️ DISTRIBUSI JAWABAN WAJIB MERATA — WAJIB DIPATUHI:
+Untuk ${n} soal ini, field "jawaban" HARUS terdistribusi antara A, B, C, dan D secara merata (~25% masing-masing).
+DILARANG semua atau mayoritas jawaban adalah "A".
+Atur pilihan jawaban sehingga opsi yang BENAR berada di posisi A, B, C, atau D secara bervariasi.
 
 Kembalikan HANYA JSON array:
-[{"no":${start},"indikator":1,"materi":"sub-topik spesifik","level":"C2","kategori":"LOTS","stimulus":"","soal":"...","pilihan":["teks A tanpa prefix","teks B","teks C","teks D"],"jawaban":"A","rasional":"A benar karena [...]. B salah karena [...]. C salah karena [...]. D salah karena [...].","pembahasan":"penjelasan lengkap untuk siswa"}]`;
+[{"no":${start},"indikator":1,"materi":"sub-topik spesifik","level":"C2","kategori":"LOTS","stimulus":"","soal":"...","pilihan":["teks A tanpa prefix","teks B","teks C","teks D"],"jawaban":"C","rasional":"C benar karena [...]. A salah karena [...]. B salah karena [...]. D salah karena [...].","pembahasan":"penjelasan lengkap untuk siswa"},{"no":${start+1},"indikator":1,"materi":"sub-topik spesifik","level":"C3","kategori":"MOTS","stimulus":"","soal":"...","pilihan":["teks A","teks B","teks C","teks D"],"jawaban":"B","rasional":"B benar karena [...]. A salah karena [...]. C salah karena [...]. D salah karena [...].","pembahasan":"penjelasan lengkap untuk siswa"}]
+Catatan: field "jawaban" HARUS bervariasi — sesuaikan posisi jawaban benar di pilihan A/B/C/D sesuai nilai field "jawaban"!`;
 
   const text = await claude('Kamu adalah Ahli Kurikulum dan Penulis Soal Profesional Indonesia. Kembalikan HANYA JSON array valid tanpa markdown.', prompt, 16000);
   return safeParseArray(text);
