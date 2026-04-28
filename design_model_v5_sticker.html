@@ -830,6 +830,76 @@ body{
   flex-shrink:0;
 }
 
+/* ── COMMERCIAL SAFE TOGGLE ── */
+.commercial-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,214,0,.06);
+  border:1px solid rgba(255,214,0,.2);
+  border-radius:var(--rad);
+  padding:8px 10px;
+  margin-top:0;
+}
+.commercial-label{
+  font-size:11px;
+  color:var(--ye);
+  font-weight:600;
+  display:flex;align-items:center;gap:5px;
+}
+.commercial-sub{
+  font-size:9px;
+  color:var(--txt3);
+  margin-top:1px;
+}
+.toggle-wrap{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-wrap input{opacity:0;width:0;height:0}
+.toggle-slider{
+  position:absolute;inset:0;
+  background:var(--bg5);
+  border:1px solid var(--brd2);
+  border-radius:20px;
+  cursor:pointer;
+  transition:.2s;
+}
+.toggle-slider:before{
+  content:'';position:absolute;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:var(--txt3);
+  left:2px;top:2px;
+  transition:.2s;
+}
+.toggle-wrap input:checked+.toggle-slider{
+  background:rgba(255,214,0,.2);
+  border-color:var(--ye);
+}
+.toggle-wrap input:checked+.toggle-slider:before{
+  background:var(--ye);
+  transform:translateX(16px);
+}
+/* ── KIDS AGE BADGE ── */
+.age-badge{
+  font-size:8px;font-weight:700;
+  border-radius:6px;padding:1px 5px;
+  background:rgba(57,255,20,.12);
+  color:var(--gr);
+  border:1px solid rgba(57,255,20,.25);
+  font-family:'JetBrains Mono',monospace;
+  flex-shrink:0;letter-spacing:.3px;
+}
+/* ── COMMERCIAL SAFE PROMPT BLOCK ── */
+.prompt-block.commercial-safe{
+  border-color:rgba(255,214,0,.3);
+}
+.prompt-block.commercial-safe .prompt-header{
+  background:linear-gradient(90deg,rgba(255,214,0,.08),transparent);
+}
+.safe-badge{
+  font-size:9px;padding:2px 6px;border-radius:10px;
+  background:rgba(255,214,0,.15);
+  color:var(--ye);
+  border:1px solid rgba(255,214,0,.3);
+  font-family:'JetBrains Mono',monospace;
+}
 /* ── DEMAND BADGES ── */
 .demand-badge{
   font-size:8px;
@@ -1014,9 +1084,9 @@ body{
     </div>
   </div>
   <div class="header-right">
-    <span class="badge">57 Categories</span>
+    <span class="badge">65 Categories</span>
     <span class="badge">6 Engines</span>
-    <span class="badge v">v5.1</span>
+    <span class="badge v">v5.2</span>
   </div>
 </header>
 
@@ -1133,6 +1203,20 @@ body{
             <option value="no_outline">No Outline</option>
           </select>
         </div>
+      </div>
+    </div>
+
+    <!-- COMMERCIAL SAFE MODE -->
+    <div class="sidebar-section">
+      <div class="commercial-bar">
+        <div>
+          <div class="commercial-label">⚖️ Commercial Safe Mode</div>
+          <div class="commercial-sub">Aktifkan untuk karakter berlisensi (Pokemon, Sanrio)</div>
+        </div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="commercialToggle" onchange="S.toggleCommercial(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
     </div>
 
@@ -1613,6 +1697,60 @@ const CATS = [
    seoBase:'bear sticker kawaii chibi panda polar brown teddy',
    vars:['panda munch','polar explorer','brown bear hug','honey bee bear','teddy care bear','bear in sweater','sleepy bear','bear picnic']},
 
+  // ── LICENSED CHARACTER STYLES ────────────────
+
+  {id:'pokemon_style',i:'🎮',t:'Pocket Creature Style',sub:'Pokemon-inspired kawaii creature (2 versions)',month:0,demand:'hi',
+   licensed:true,
+   core:'Pikachu kawaii chibi character, Pokemon style electric yellow mouse, thunder spark motif, Nintendo Pokemon aesthetic, Bulbasaur Charmander Squirtle Eevee style, collectible creature, game companion',
+   coreCommercial:'pocket creature kawaii chibi character, electric yellow mouse thunder spark, fire lizard flame tail, water turtle shell, grass seed bulb back, purple psychic cat, ice fox tail, collectible monster game aesthetic, friendly creature companion design',
+   keywords:['pocket creature','monster collector','electric mouse','fire dragon','water turtle','grass creature','psychic cat','game companion','kawaii creature'],
+   neg:'ugly, deformed, scary, realistic, copyright watermark, text, complex background',
+   seoBase:'pocket creature kawaii sticker monster collector chibi game character',
+   vars:['electric mouse thunder','fire lizard flame','water turtle shell','grass bulb sprout','eevee fox fluff','psychic cat spoon','ice weasel ribbon','ghost floating mischief','fairy pink wings','dragon fierce cute','normal cat nap','fighting punching gloves']},
+
+  {id:'sanrio_style',i:'🎀',t:'Sanrio-Inspired Pack',sub:'Hello Kitty · Kuromi · Melody · Cinnamoroll · Pompompurin',month:0,demand:'hi',
+   licensed:true,
+   core:'Hello Kitty Kuromi My Melody Cinnamoroll Pompompurin Sanrio character kawaii, white cat no mouth red bow, gothic bunny black hood skull motif, white bunny pink hood sweet, fluffy blue puppy cloud, golden retriever yellow beret, pastel palette soft',
+   coreCommercial:'Japanese kawaii character flat design: white cat no mouth with red bow on ear (no brand), gothic bunny with black hooded cape and skull motif, sweet white bunny wearing pink hood, fluffy blue cloud-like puppy, chubby golden puppy with yellow beret chef hat, Sanrio-inspired pastel aesthetic, flat kawaii illustration',
+   keywords:['sanrio style','kawaii japan','white cat bow','gothic bunny skull','sweet bunny hood','cloud puppy blue','golden puppy beret','japanese kawaii','pastel character','cute plush doll style'],
+   neg:'ugly, deformed, non-kawaii, scary, copyright text, brand logo, watermark',
+   seoBase:'sanrio inspired kawaii sticker japanese character pastel plush doll style',
+   vars:['white cat red bow (Hello Kitty style)','gothic bunny black hood skull (Kuromi style)','sweet bunny pink hood (My Melody style)','fluffy cloud puppy blue (Cinnamoroll style)','chubby golden puppy beret (Pompompurin style)','Keroppi frog green lily pad style','Badtz-Maru penguin spiky style','Chococat black cat four whiskers style','Little Twin Stars chibi star style','Gudetama lazy egg yellow style','Aggretsuko red panda rage style','Tuxedo Sam penguin bow tie style']},
+
+  // ── KIDS 4-7 TAHUN ───────────────────────────
+
+  {id:'kids_dino_animals',i:'🦕',t:'Kids Dino & Animals',sub:'Dinosaur & cute animals for kids age 4-7',month:0,demand:'hi',
+   ageTag:'4-7y',
+   core:'cute kawaii dinosaur sticker for children age 4-7, baby T-Rex Brontosaurus Triceratops Stegosaurus chibi, big sparkle eyes, friendly smile, simple rounded shape, soft pastel green blue purple, bold clean outline, simple design easy to recognize, kids sticker',
+   keywords:['dinosaur kids sticker','baby T-Rex','cute dino chibi','Brontosaurus kawaii','kids animal sticker','farm animal cute','jungle animal kawaii','sea creature kids','friendly dinosaur'],
+   neg:'scary, gore, blood, realistic, dark, violent, complex detail, text, watermark',
+   seoBase:'cute dinosaur kids sticker kawaii baby dino animal children age 4-7',
+   vars:['baby T-Rex tiny roar','smiling Brontosaurus long neck','friendly Triceratops three horns','Stegosaurus spiky back cute','cute elephant big ears','giraffe long neck spots','lion cub fluffy mane','penguin waddle tuxedo','baby shark open mouth','duckling yellow fluffy','bunny hop spring','frog lily pad green']},
+
+  {id:'kids_princess_unicorn',i:'👸',t:'Kids Princess & Unicorn',sub:'Princess fairy unicorn for girls age 4-7',month:0,demand:'hi',
+   ageTag:'4-7y',
+   core:'cute princess fairy unicorn sticker for girls age 4-7, crown tiara sparkle, rainbow magic wand, fairy butterfly wings, unicorn rainbow horn, pastel pink lavender mint palette, glitter star burst, chibi princess character, simple clean design, kids sticker',
+   keywords:['princess sticker kids','unicorn rainbow','fairy wings kawaii','tiara crown sparkle','magic wand stars','rainbow pony','fairy tale princess','mermaid princess','little girl sticker'],
+   neg:'scary, dark, violent, adult, realistic, complex, text, watermark',
+   seoBase:'princess unicorn kawaii sticker kids girls fairy rainbow crown sparkle',
+   vars:['rainbow unicorn sparkle horn','crown princess tiara gold','fairy butterfly wings pink','magic wand star burst','pink castle tower','rainbow bridge arch','mermaid tail scales','flower fairy garden','star fairy wand','pumpkin carriage Cinderella','crystal glass slipper','sleeping beauty rose']},
+
+  {id:'kids_vehicles_hero',i:'🚗',t:'Kids Vehicles & Heroes',sub:'Cars trucks heroes for boys age 4-7',month:0,demand:'hi',
+   ageTag:'4-7y',
+   core:'cute vehicle superhero sticker for children age 4-7, cartoon car truck rocket fire engine police car, happy smiling face on vehicle, bold primary red blue yellow colors, simple rounded shape, chibi superhero character, big head small body, bold black outline, kids sticker',
+   keywords:['kids car sticker','cute truck kawaii','fire engine chibi','police car kids','rocket ship space','superhero chibi kids','race car happy face','construction truck','school bus yellow'],
+   neg:'scary, violent, crash, dark, realistic, complex, adult, text, watermark',
+   seoBase:'cute car truck vehicle sticker kids chibi superhero race fire engine boys',
+   vars:['race car happy face red','fire truck rescue ladder','police car blue siren','school bus yellow full','dump truck construction yellow','rocket ship stars','helicopter propeller spin','submarine ocean deep','ambulance white red cross','tractor farm green','spaceship futuristic','superhero flying cape']},
+
+  {id:'kids_rainbow_edu',i:'🌈',t:'Kids Rainbow & Learning',sub:'Rainbow ABC numbers fruits for kids age 4-7',month:0,demand:'hi',
+   ageTag:'4-7y',
+   core:'rainbow educational kawaii sticker for children age 4-7, ABC letter with cute fruit face, number with animal, rainbow arc cloud, bright primary colors, bold simple shapes, learning fun, smiley face on objects, thick bold outline, digital sticker iPad GoodNotes friendly',
+   keywords:['kids learning sticker','rainbow kawaii','ABC letter fruit','number animal kids','shapes sticker cute','fruit face kawaii','color wheel kids','digital sticker goodnotes','ipad sticker kids'],
+   neg:'scary, dark, violent, complex, boring, adult, text inside, watermark',
+   seoBase:'rainbow learning sticker kids ABC number fruit digital iPad GoodNotes kawaii',
+   vars:['rainbow full arc cloud','letter A red apple smile','number 1 sunshine yellow','heart shape pink blush','star yellow sparkle eyes','watermelon slice smile','strawberry kawaii face','caterpillar color segments','butterfly wing pattern','cloud rain drops kawaii','sun rays happy face','mushroom polka dot red']},
+
   // ── NEW MOMENT CATEGORIES ──────────────────────
 
   {id:'idul_adha',i:'🐑',t:'Idul Adha / Qurban',sub:'Eid al-Adha Islamic sacrifice celebration',month:6,demand:'hi',
@@ -1756,6 +1894,14 @@ const TEMPLATES=[
   {i:'🏳️‍🌈',t:'Pride Bundle',cat:'pride_rainbow',cut:'die_cut',finish:'holographic',outline:'white_halo'},
   {i:'🎂',t:'Birthday Pack',cat:'birthday_party',cut:'die_cut',finish:'holographic',outline:'ultra_black'},
   {i:'🐱',t:'Cat Universe',cat:'cat_universe',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  // Licensed character styles
+  {i:'🎮',t:'Pocket Creatures',cat:'pokemon_style',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'🎀',t:'Sanrio Pack',cat:'sanrio_style',cut:'die_cut',finish:'holographic',outline:'white_halo'},
+  // Kids 4-7 themes
+  {i:'🦕',t:'Kids Dino Pack',cat:'kids_dino_animals',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'👸',t:'Princess Magic',cat:'kids_princess_unicorn',cut:'die_cut',finish:'holographic',outline:'white_halo'},
+  {i:'🚗',t:'Kids Heroes',cat:'kids_vehicles_hero',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
+  {i:'🌈',t:'Rainbow Learn',cat:'kids_rainbow_edu',cut:'square',finish:'matte',outline:'ultra_black'},
   // Moment templates
   {i:'🐑',t:'Idul Adha Pack',cat:'idul_adha',cut:'die_cut',finish:'holographic',outline:'ultra_black'},
   {i:'🇮🇩',t:'17 Agustus Pack',cat:'indonesia_17agustus',cut:'die_cut',finish:'glossy',outline:'ultra_black'},
@@ -1821,6 +1967,7 @@ const S={
   stickerFormat:'single',
   gridLayout:'custom',
   iconCount:24,
+  commercialMode:false,
 
   init(){
     this.renderCats();
@@ -1857,6 +2004,25 @@ const S={
   setFinish(v){this.finish=v;this.updateStats()},
   setSize(v){this.sizePreset=v;this.updateStats()},
   setOutline(v){this.outlineStyle=v;this.updateStats()},
+
+  toggleCommercial(v){
+    this.commercialMode=!!v;
+    // show warning banner if switching to reference mode on licensed category
+    const cat=CATS.find(x=>x.id===this.cat);
+    if(!v && cat&&cat.licensed){
+      this.showToast('⚠️ Reference Mode — NOT for commercial sale!',4000,'#ff6b6b');
+    } else if(v){
+      this.showToast('✅ Commercial Safe Mode ON',2000);
+    }
+    this.updateStats();
+  },
+
+  // get core description (commercial-safe or full reference)
+  getCoreStr(cat){
+    const c=cat||CATS.find(x=>x.id===this.cat);
+    if(c.licensed && this.commercialMode && c.coreCommercial) return c.coreCommercial;
+    return c.core;
+  },
 
   setFormat(f){
     this.stickerFormat=f;
@@ -1946,27 +2112,31 @@ const S={
   // ── BUILDERS ──────────────────────────────────────
   buildMJ(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
     const modStr=mods?`, ${mods}`:'';
+    const safeTag=c.licensed&&this.commercialMode?' [COMMERCIAL SAFE]':c.licensed?' [REFERENCE ONLY - not for sale]':'';
     const ar=this.sizePreset==='line370'?'--ar 37:32':tb.isSheet?'--ar 4:3':'--ar 1:1';
     const sheetStr=tb.isSheet
       ?`, sticker sheet${tb.grid?' '+tb.grid+' grid':''}${tb.iconCount>1?', '+tb.iconCount+' icons':''}, uniform size, evenly spaced, kiss-cut sheet`
       :'';
-    return `${c.t.toLowerCase()} ${tb.isSheet?'sticker sheet':'sticker'}, ${c.core}${modStr}, ${tb.outline}, isolated on transparent background, ${tb.finish}, ${tb.size}, ${tb.cut}${sheetStr}${extra?', '+extra:''}
+    return `${c.t.toLowerCase()} ${tb.isSheet?'sticker sheet':'sticker'}, ${core}${modStr}, ${tb.outline}, isolated on transparent background, ${tb.finish}, ${tb.size}, ${tb.cut}${sheetStr}${extra?', '+extra:''}${safeTag}
 
 --ar ${ar.replace('--ar ','')} --v 7 --niji 6 --stylize 850 --q 2 --style raw --no text, watermark, border, background`;
   },
 
   buildNB2(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
     const plat=PLATFORMS[this.platform];
+    const safeNote=c.licensed?(this.commercialMode?'✅ COMMERCIAL SAFE VERSION':'⚠️ REFERENCE ONLY — TIDAK untuk dijual'):'';
     const formatLine=tb.isSheet
       ?`Sheet Pack — Grid ${tb.grid||'custom'}${tb.iconCount>1?', '+tb.iconCount+' icons':''}`
       :'Single Icon';
-    return `━━ STICKER PROMPT — ${c.t.toUpperCase()} ━━
+    return `━━ STICKER PROMPT — ${c.t.toUpperCase()} ━━${safeNote?' ['+safeNote+']':''}
 
 📌 KATEGORI    : ${c.t}
 🎨 STYLE       : ${c.sub}
@@ -1978,7 +2148,7 @@ const S={
 ${extra?'🔄 VARIASI     : '+extra+'\n':''}
 ━━ DESKRIPSI VISUAL ━━
 
-${c.core}${mods?'\nModifier: '+mods:''}.
+${core}${mods?'\nModifier: '+mods:''}.
 ${tb.isSheet?`Buat ${tb.iconCount} ikon berbeda dalam satu sheet grid ${tb.grid||''}.\nSetiap ikon berdiri sendiri, ukuran seragam, spasi merata.`:'Karakter tunggal terisolasi di latar transparan.'}
 Warna: ${c.keywords.slice(0,4).join(', ')}.
 Gaya: chibi, illustrasi digital, detail medium.
@@ -2001,14 +2171,16 @@ Finishing: ${tb.finish}`;
 
   buildSD(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const safeTag=c.licensed?(this.commercialMode?', commercial safe version':''):', (reference only - not for sale)';
     const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid, ${tb.iconCount} icons uniform, kiss-cut sheet layout`:'';
     const canvasSize=tb.isSheet
       ?(tb.grid==='8x4'?'2048x1024':tb.grid==='6x4'?'1536x1024':tb.grid==='6x6'?'1536x1536':'1024x1024')
       :(this.sizePreset==='line370'?'370x320':this.sizePreset==='wa512'?'512x512':'1024x1024');
     return `POSITIVE:
-${c.core}${mods?', '+mods:''}, ${tb.outline}, transparent background, ${tb.isSheet?'sticker sheet design, multiple icons, evenly spaced':'isolated artwork, sticker design'}, ${tb.finish}, digital illustration, clean lineart, flat color, high detail, ${tb.size}${sheetStr}${extra?', '+extra:''}
+${core}${mods?', '+mods:''}, ${tb.outline}, transparent background, ${tb.isSheet?'sticker sheet design, multiple icons, evenly spaced':'isolated artwork, sticker design'}, ${tb.finish}, digital illustration, clean lineart, flat color, high detail, ${tb.size}${sheetStr}${extra?', '+extra:''}${c.licensed?safeTag:''}
 
 NEGATIVE:
 ${c.neg}, complex background, shadow, gradient background, low quality, blurry, extra limbs, mutation${tb.isSheet?'':', multiple characters'}
@@ -2018,8 +2190,10 @@ Settings: Steps 30, CFG 7.5, Sampler DPM++ 2M Karras, Size ${canvasSize}`;
 
   buildGemini(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const safeNote=c.licensed?(this.commercialMode?'\n⚖️ COMMERCIAL SAFE VERSION — style-inspired, no brand names.':'\n⚠️ REFERENCE VERSION — do NOT use for commercial sale.'):'';
     const sheetInstr=tb.isSheet?`
 This is a STICKER SHEET design:
 • Grid layout: ${tb.grid||'custom'} arrangement
@@ -2027,9 +2201,9 @@ This is a STICKER SHEET design:
 • Each icon must be the same size and evenly spaced
 • All icons share the same art style and color palette
 • Arrange icons neatly across the sheet with equal padding`:'';
-    return `Create a high-quality ${tb.isSheet?'sticker sheet':'sticker illustration'} of ${c.t.toLowerCase()}.
+    return `Create a high-quality ${tb.isSheet?'sticker sheet':'sticker illustration'} of ${c.t.toLowerCase()}.${safeNote}
 
-The design should feature: ${c.core}${mods?', with '+mods:''}. Use a kawaii digital illustration style with clean linework and vibrant colors.
+The design should feature: ${core}${mods?', with '+mods:''}. Use a kawaii digital illustration style with clean linework and vibrant colors.
 ${sheetInstr}
 STICKER SPECIFICATIONS:
 • Format: ${tb.isSheet?'Sheet Pack — '+tb.grid+' grid, '+tb.iconCount+' icons':'Single Icon'}
@@ -2045,7 +2219,7 @@ IMPORTANT RULES:
 2. No shadows, gradients, or background elements
 3. ${tb.outline} must cleanly follow every silhouette
 4. All fine details must remain crisp at sticker print size
-5. Do not include any text, watermarks, or border frames
+5. Do not include any text, watermarks, or brand logos
 
 Style references: ${c.keywords.slice(0,5).join(', ')}.
 Color palette: cheerful, saturated, print-optimized.`;
@@ -2053,14 +2227,16 @@ Color palette: cheerful, saturated, print-optimized.`;
 
   buildFlow(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const safeTag=c.licensed?(this.commercialMode?' [COMMERCIAL SAFE]':' [REFERENCE ONLY]'):'';
     const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid layout, ${tb.iconCount} icons, uniform size, evenly spaced`:'';
     const canvas=tb.isSheet
       ?(tb.grid==='8x4'?'2048×1024':tb.grid==='6x4'?'1536×1024':tb.grid==='6x6'?'1536×1536':'1024×1024')
       :(this.sizePreset==='line370'?'370×320':this.sizePreset==='wa512'?'512×512':'1024×1024');
-    return `POSITIVE PROMPT:
-${c.core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet, multiple icons, evenly arranged':'isolated sticker artwork'}, transparent background, ${tb.finish}, digital art, clean illustration, vibrant colors${sheetStr}${extra?', '+extra:''}
+    return `POSITIVE PROMPT:${safeTag}
+${core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet, multiple icons, evenly arranged':'isolated sticker artwork'}, transparent background, ${tb.finish}, digital art, clean illustration, vibrant colors${sheetStr}${extra?', '+extra:''}
 
 NEGATIVE PROMPT:
 ${c.neg}, background, shadow, low quality, blurry, extra fingers, deformed, ugly, bad anatomy, text, watermark
@@ -2076,13 +2252,15 @@ Flow Settings:
 
   buildLeonardo(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
     const tb=this.getStickerTechBlock();
     const mods=this.getModsStr();
+    const safeTag=c.licensed?(this.commercialMode?' [COMMERCIAL SAFE]':' [REFERENCE ONLY]'):'';
     const sheetStr=tb.isSheet?`, sticker sheet ${tb.grid||''} grid, ${tb.iconCount} icons, uniform size`:'';
     const canvas=tb.isSheet
       ?(tb.grid==='8x4'?'2048×1024':tb.grid==='6x4'?'1536×1024':tb.grid==='6x6'?'1536×1536':'1024×1024')
       :(this.sizePreset==='line370'?'370×320':this.sizePreset==='wa512'?'512×512':'1024×1024');
-    return `${c.core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet design, '+tb.iconCount+' icons on sheet, '+tb.grid+' grid layout':'sticker design, isolated artwork'}, transparent background, ${tb.finish}, clean digital illustration, chibi kawaii style${sheetStr}${extra?', '+extra:''}
+    return `${core}${mods?', '+mods:''}, ${tb.outline}, ${tb.isSheet?'sticker sheet design, '+tb.iconCount+' icons on sheet, '+tb.grid+' grid layout':'sticker design, isolated artwork'}, transparent background, ${tb.finish}, clean digital illustration, chibi kawaii style${sheetStr}${extra?', '+extra:''}${safeTag}
 
 Recommended Model: Anime Pastel Dream / AlbedoBase XL / DreamShaper v7
 Canvas Size: ${canvas}px
@@ -2182,7 +2360,8 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
       <button class="cat-btn${c.id===this.cat?' active':''}" data-cat="${c.id}" onclick="S.setCat('${c.id}')">
         <span class="cat-ic">${c.i}</span>
         <span class="cat-btn-name">${c.t}</span>
-        ${c.demand?`<span class="demand-badge ${demandCls[c.demand]||''}">${demandLabel[c.demand]||''}</span>`:''}
+        ${c.ageTag?`<span class="age-badge">${c.ageTag}</span>`:''}
+        ${c.demand&&!c.ageTag?`<span class="demand-badge ${demandCls[c.demand]||''}">${demandLabel[c.demand]||''}</span>`:''}
       </button>
     `).join('');
     // update active state
@@ -2519,11 +2698,18 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
     return String(s).replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'');
   },
 
-  toast(msg,dur=2200){
+  toast(msg,dur=2200,color=null){
     const t=document.getElementById('toast');
-    t.textContent=msg;t.classList.add('show');
+    if(!t)return;
+    t.textContent=msg;
+    t.style.color=color||'';
+    t.style.borderColor=color||'';
+    t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'),dur);
   },
+
+  // alias for toggleCommercial
+  showToast(msg,dur,color){this.toast(msg,dur,color);},
 };
 
 // ══════════════════════════════════════════════════
