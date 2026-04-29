@@ -1058,28 +1058,60 @@ body.simple-mode .expert-only{display:none!important}
 .demand-lo{background:rgba(96,96,120,.3);color:var(--txt3);border:1px solid var(--brd)}
 
 /* ── MONTH FILTER ── */
-.month-filter{
-  display:flex;flex-wrap:wrap;gap:3px;
+.month-filter{display:none} /* hidden — replaced by group filter */
+
+/* ── GROUP FILTER ── */
+.group-filter{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
   margin-bottom:8px;
 }
-.month-btn{
+.grp-btn{
   background:var(--bg4);
   border:1px solid var(--brd);
-  border-radius:6px;
-  padding:3px 7px;
-  font-size:9px;
-  font-family:'JetBrains Mono',monospace;
-  color:var(--txt3);
+  border-radius:var(--rad);
+  padding:7px 8px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--txt2);
   cursor:pointer;
   transition:var(--trans);
-  letter-spacing:.3px;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  line-height:1.2;
 }
-.month-btn:hover{border-color:var(--cy);color:var(--cy)}
-.month-btn.active{
-  background:rgba(0,255,221,.1);
+.grp-btn:hover{border-color:var(--cy);color:var(--cy);background:rgba(0,255,221,.06)}
+.grp-btn.active{
+  background:rgba(0,255,221,.12);
   border-color:var(--cy);
   color:var(--cy);
 }
+.grp-btn.active-ac{
+  background:rgba(201,63,255,.12);
+  border-color:var(--ac);
+  color:var(--ac);
+}
+.grp-btn.active-ye{
+  background:rgba(255,214,0,.12);
+  border-color:var(--ye);
+  color:var(--ye);
+}
+.grp-btn.active-pi{
+  background:rgba(255,110,199,.12);
+  border-color:var(--pi);
+  color:var(--pi);
+}
+.grp-btn.active-or{
+  background:rgba(255,122,0,.12);
+  border-color:var(--or);
+  color:var(--or);
+}
+/* month-btn masih dipakai internal, sembunyikan */
+.month-btn{display:none}
 
 /* ── CAT BTN WITH DEMAND ── */
 .cat-btn{
@@ -1714,22 +1746,32 @@ body.simple-mode .expert-only{display:none!important}
     <!-- CATEGORY -->
     <div class="sidebar-section">
       <div class="sidebar-title">Category</div>
-      <input type="text" class="cat-search" id="catSearch" placeholder="🔍 Search category..." oninput="S.filterCats(this.value)">
+      <input type="text" class="cat-search" id="catSearch" placeholder="🔍 Cari kategori..." oninput="S.filterCats(this.value)">
+
+      <!-- GROUP FILTER — 1 klik langsung ke grup -->
+      <div class="group-filter" id="groupFilter">
+        <button class="grp-btn active" data-grp="all" onclick="S.filterByGroup('all',this)">
+          🌐 Semua
+        </button>
+        <button class="grp-btn" data-grp="hot" onclick="S.filterByGroup('hot',this)">
+          🔥 Laris
+        </button>
+        <button class="grp-btn" data-grp="anime" onclick="S.filterByGroup('anime',this)">
+          🎌 Anime
+        </button>
+        <button class="grp-btn" data-grp="kids" onclick="S.filterByGroup('kids',this)">
+          👶 Anak-anak
+        </button>
+        <button class="grp-btn" data-grp="moment" onclick="S.filterByGroup('moment',this)">
+          🎉 Momen
+        </button>
+        <button class="grp-btn" data-grp="evergreen" onclick="S.filterByGroup('evergreen',this)">
+          🌿 Selalu
+        </button>
+      </div>
+
       <div class="month-filter" id="monthFilter">
         <button class="month-btn active" data-month="all" onclick="S.filterByMonth('all')">All</button>
-        <button class="month-btn" data-month="1" onclick="S.filterByMonth('1')">Jan</button>
-        <button class="month-btn" data-month="2" onclick="S.filterByMonth('2')">Feb</button>
-        <button class="month-btn" data-month="3" onclick="S.filterByMonth('3')">Mar</button>
-        <button class="month-btn" data-month="4" onclick="S.filterByMonth('4')">Apr</button>
-        <button class="month-btn" data-month="5" onclick="S.filterByMonth('5')">May</button>
-        <button class="month-btn" data-month="6" onclick="S.filterByMonth('6')">Jun</button>
-        <button class="month-btn" data-month="7" onclick="S.filterByMonth('7')">Jul</button>
-        <button class="month-btn" data-month="8" onclick="S.filterByMonth('8')">Aug</button>
-        <button class="month-btn" data-month="9" onclick="S.filterByMonth('9')">Sep</button>
-        <button class="month-btn" data-month="10" onclick="S.filterByMonth('10')">Oct</button>
-        <button class="month-btn" data-month="11" onclick="S.filterByMonth('11')">Nov</button>
-        <button class="month-btn" data-month="12" onclick="S.filterByMonth('12')">Dec</button>
-        <button class="month-btn" data-month="0" onclick="S.filterByMonth('0')">Ever</button>
       </div>
       <div class="cat-grid" id="catGrid"></div>
     </div>
@@ -2677,6 +2719,7 @@ const S={
   expertMode:false,
   customArtStyle:'kawaii',
   isCustomMode:false,
+  activeGroup:'all',
 
   init(){
     this.setMode('simple'); // default Simple mode
@@ -2820,6 +2863,28 @@ const S={
 
   filterCats(q){
     this.catQuery=q.toLowerCase();
+    // reset group ke all saat search
+    if(q){
+      this.activeGroup='all';
+      document.querySelectorAll('.grp-btn').forEach(b=>{
+        b.classList.remove('active','active-ac','active-ye','active-pi','active-or');
+        if(b.dataset.grp==='all')b.classList.add('active');
+      });
+    }
+    this.renderCats();
+  },
+
+  filterByGroup(grp,btn){
+    this.activeGroup=grp;
+    // reset search
+    const sb=document.getElementById('catSearch');
+    if(sb)sb.value='';
+    this.catQuery='';
+    // update button styles
+    document.querySelectorAll('.grp-btn').forEach(b=>
+      b.classList.remove('active','active-ac','active-ye','active-pi','active-or'));
+    const clsMap={all:'active',hot:'active-ye',anime:'active-ac',kids:'active-pi',moment:'active-or',evergreen:'active'};
+    if(btn)btn.classList.add(clsMap[grp]||'active');
     this.renderCats();
   },
 
@@ -3168,13 +3233,18 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
     const g=document.getElementById('catGrid');
     if(!g)return;
     const q=(this.catQuery||'').toLowerCase();
-    const m=this.activeMonth||'all';
+    const grp=this.activeGroup||'all';
     const demandLabel={hi:'HIGH',md:'MED',lo:'LOW'};
     const demandCls={hi:'demand-hi',md:'demand-md',lo:'demand-lo'};
     const filtered=CATS.filter(c=>{
       const matchQ=!q||(c.t+c.sub+(c.keywords||[]).join(' ')).toLowerCase().includes(q);
-      const matchM=m==='all'||(m==='0'?c.month===0:String(c.month)===m);
-      return matchQ&&matchM;
+      let matchG=true;
+      if(grp==='hot')    matchG=c.demand==='hi';
+      else if(grp==='anime')   matchG=!!c.licensed;
+      else if(grp==='kids')    matchG=!!c.ageTag;
+      else if(grp==='moment')  matchG=c.month>0;
+      else if(grp==='evergreen') matchG=c.month===0&&!c.licensed&&!c.ageTag;
+      return matchQ&&matchG;
     });
     if(!filtered.length){
       g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:16px;font-size:11px;color:var(--txt3)">No categories found</div>`;
