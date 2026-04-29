@@ -3007,10 +3007,12 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
 
   renderSinglePrompt(prompt,cat){
     const area=document.getElementById('outputArea');
-    const engLabels={mj:'Midjourney v7 + Niji 6',nb2:'NB2 Structured (ID)',sd:'Stable Diffusion',
-      gem:'Google Gemini',flow:'Flow / Automatic1111',leo:'Leonardo AI'};
-    const dotClass={mj:'dot-mj',nb2:'dot-nb2',sd:'dot-sd',gem:'dot-gem',flow:'dot-flow',leo:'dot-leo'};
+    const engLabels={mj:'Midjourney v7 + Niji 6',nb2:'NB2 Structured (ID)',en2:'EN Structured (EN)',
+      sd:'Stable Diffusion',gem:'Google Gemini',flow:'Flow / Automatic1111',leo:'Leonardo AI'};
+    const dotClass={mj:'dot-mj',nb2:'dot-nb2',en2:'dot-nb2',sd:'dot-sd',gem:'dot-gem',flow:'dot-flow',leo:'dot-leo'};
+    const engBtns={mj:'🎨 MJ',nb2:'🇮🇩 NB2',en2:'🇬🇧 EN2',gem:'✨ Gemini',flow:'🌊 Flow',sd:'🖼 SD',leo:'🦁 Leo'};
     const chars=prompt.length;
+    const allEngines=['mj','gem','nb2','en2','flow','leo','sd'];
     area.innerHTML=`
       <div class="prompt-block engine-${this.engine}">
         <div class="prompt-header">
@@ -3023,21 +3025,18 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
             <button class="copy-btn" onclick="S.copyPrompt(this,'${this.engine}')">📋 Copy</button>
           </div>
         </div>
+        <!-- ALL ENGINES QUICK SWITCH — always visible, no scroll needed -->
+        <div style="padding:8px 14px;background:var(--bg4);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:10px;color:var(--txt3);font-family:'JetBrains Mono',monospace;white-space:nowrap;margin-right:2px">Switch Engine:</span>
+          ${allEngines.map(e=>`
+            <button class="btn btn-xs ${e===this.engine?'btn-primary':'btn-outline'}" onclick="S.switchEngine('${e}')" title="${engLabels[e]||e}">
+              ${engBtns[e]||e.toUpperCase()}
+            </button>
+          `).join('')}
+        </div>
         <div class="prompt-body" id="promptBody">${this.escHtml(prompt)}</div>
         <div class="kw-tags">
           ${(cat.keywords||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('')}
-        </div>
-      </div>
-      <div class="prompt-block" style="border-color:var(--brd)">
-        <div class="prompt-header">
-          <div class="prompt-label" style="color:var(--txt2)">All Engines — One Click</div>
-        </div>
-        <div style="padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px">
-          ${['mj','nb2','gem','flow','sd','leo'].map(e=>`
-            <button class="btn btn-outline btn-sm" onclick="S.switchEngine('${e}')">
-              ${({mj:'🎯 MJ',nb2:'📝 NB2',gem:'🔵 Gemini',flow:'🌊 Flow',sd:'🖼 SD',leo:'🦁 Leonardo'})[e]}
-            </button>
-          `).join('')}
         </div>
       </div>
     `;
