@@ -1920,11 +1920,71 @@ const TEMPLATES=[
 // VARIATION SEEDS
 // ══════════════════════════════════════════════════
 const VAR_SEEDS={
-  expressions:['happy grinning','sad crying','surprised shocked','angry fuming','sleepy drowsy','love struck','embarrassed blushing','nervous sweating','confident smiling','confused tilting head'],
-  characters:['main character','sidekick friend','villain version','baby version','elderly version','teen version','royalty version','casual everyday','fancy dressed','sporty athletic'],
-  accessories:['wearing sunglasses','holding flower','with umbrella','holding coffee cup','wearing headphones','with backpack','holding book','with camera','wearing crown','holding balloon'],
-  seasonal:['spring cherry blossom','summer beach','autumn harvest','winter snowfall','rainy season','golden hour','midnight version','sunrise morning','twilight dusk','storm dramatic'],
-  sheet:['top left','top center','top right','middle left','center focal','middle right','bottom left','bottom center','bottom right'],
+  expressions:[
+    // 30 unique expressions
+    'happy grinning wide smile','sad crying teardrops','surprised shocked mouth open',
+    'angry fuming red face','sleepy drowsy half eyes','love struck heart eyes',
+    'embarrassed blushing red cheeks','nervous sweating drop','confident smiling proud',
+    'confused tilting head question mark','excited jumping energy','shy hiding behind hands',
+    'playful winking tongue out','cool wearing sunglasses','hungry drooling food thoughts',
+    'scared trembling freeze','laughing rolling floor','determined clenched fists',
+    'tired yawning stretched','bored sighing eyes closed','curious eyes wide sparkling',
+    'silly making funny face','peaceful eyes closed zen','epic dramatic wind blowing',
+    'sneaky smirking side eye','cheerful bouncing spring','melancholic rain window',
+    'disgusted yuck face','inspired lightbulb moment','proud chest puffed out',
+  ],
+  characters:[
+    // 30 unique character archetypes
+    'main character center stage','sidekick friend loyal','villain dramatic evil grin',
+    'baby version tiny cute','elderly version wise wrinkles','teen version cool casual',
+    'royalty version crown cape','casual everyday relaxed','fancy dressed formal bow',
+    'sporty athletic energetic','ninja stealth dark outfit','pirate adventure eye patch',
+    'wizard magical staff hat','chef cooking apron hat','artist painting palette brush',
+    'musician playing instrument','doctor healing stethoscope','explorer adventuring map',
+    'superhero flying cape','fairy woodland wings wand','vampire gothic cape fangs',
+    'zombie cute undead','robot mechanical circuits','angel halo white wings',
+    'devil cute horns tail','detective mystery magnifier','cowboy western hat lasso',
+    'samurai warrior katana','mermaid ocean tail fins','astronaut space helmet suit',
+  ],
+  accessories:[
+    // 30 unique accessories
+    'wearing sunglasses cool','holding flower bouquet','with umbrella rainy',
+    'holding coffee cup warm','wearing headphones music','with backpack adventure',
+    'holding book reading','with camera photography','wearing crown royal',
+    'holding balloon festive','holding ice cream cone','with teddy bear hug',
+    'wearing cozy scarf knit','holding lollipop candy','with guitar strumming',
+    'holding pizza slice','wearing chef apron','with paintbrush art',
+    'holding trophy champion','wearing superhero cape','with magic wand sparkle',
+    'holding vintage telephone','wearing straw hat sun','with butterfly net catch',
+    'holding sparkler firework','wearing cute suspenders','with potted plant gift',
+    'holding treasure map','wearing colorful overalls','with fishing rod pond',
+  ],
+  seasonal:[
+    // 30 seasonal / time variations
+    'spring cherry blossom pink','summer beach sunny waves','autumn harvest orange leaves',
+    'winter snowfall white cozy','rainy season umbrella drops','golden hour sunset warm',
+    'midnight starry moonlit','sunrise morning fresh dew','twilight dusk purple sky',
+    'storm dramatic dark clouds','Valentine pink hearts roses','Easter pastel eggs spring',
+    'Halloween spooky pumpkin night','Christmas holiday snow pine','New Year fireworks countdown',
+    'Ramadan lantern crescent gold','tropical summer palm breeze','mountain winter pine frost',
+    'desert heat mirage sun','arctic freeze ice crystal','monsoon heavy rain puddle',
+    'autumn maple red gold','spring garden blooming tulip','summer festival fireflies',
+    'winter cozy fireplace mug','harvest moon orange glow','cherry blossom sakura shower',
+    'summer solstice long day','Idul Adha festive green gold','birthday party confetti color',
+  ],
+  sheet:[
+    // 30 sheet layout positions / arrangement descriptions
+    'top-left corner position','top-center position','top-right corner position',
+    'middle-left position','center focal piece','middle-right position',
+    'bottom-left corner position','bottom-center position','bottom-right corner position',
+    'scattered random layout','diagonal stripe pattern','circular ring arrangement',
+    'grid 3x3 center cluster','border frame decoration','zigzag row pattern',
+    'large hero + 4 small','2 column split layout','3 row horizontal bands',
+    'heart shaped arrangement','star shaped cluster','diamond pattern grid',
+    'L-shaped corner fill','top row + bottom cluster','left column + right grid',
+    'center radial burst','four quadrant equal split','progressive size large to small',
+    'alternating big small row','nested inner outer ring','full bleed edge to edge fill',
+  ],
 };
 
 // ══════════════════════════════════════════════════
@@ -2313,17 +2373,35 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
 
   getVarSeeds(cat){
     const mode=this.varMode;
-    if(mode==='expressions') return VAR_SEEDS.expressions;
-    if(mode==='characters') return VAR_SEEDS.characters;
-    if(mode==='accessories') return VAR_SEEDS.accessories;
-    if(mode==='seasonal') return VAR_SEEDS.seasonal;
-    if(mode==='sheet') return VAR_SEEDS.sheet.map(pos=>`sheet position: ${pos}`);
-    // standard — use category vars + generic
+    const TARGET=30;
+
+    if(mode==='expressions') return VAR_SEEDS.expressions.slice(0,TARGET);
+    if(mode==='characters')  return VAR_SEEDS.characters.slice(0,TARGET);
+    if(mode==='accessories') return VAR_SEEDS.accessories.slice(0,TARGET);
+    if(mode==='seasonal')    return VAR_SEEDS.seasonal.slice(0,TARGET);
+    if(mode==='sheet')       return VAR_SEEDS.sheet.slice(0,TARGET);
+
+    // ── standard mode: category vars + expanded generic fills up to 30 ──
     const base=cat.vars||[];
-    const extras=['cute smiling','waving hello','holding heart','jumping joyful',
-      'sitting relaxed','running energetic','thinking pose','surprised expression',
-      'sleeping peacefully','dancing moves'];
-    return [...base,...extras].slice(0,30);
+    const generic=[
+      'cute smiling waving','holding heart love','jumping joyful energy',
+      'sitting relaxed calm','running energetic fast','thinking curious pose',
+      'sleeping peacefully zzz','dancing happy moves','flying magical float',
+      'stretching morning yawn','peeking shy corner','giving thumbs up',
+      'doing peace sign v','blowing kiss heart','catching falling star',
+      'spinning twirl dizzy','hiding under hat','poking out surprise',
+    ];
+    const combined=[...base,...generic];
+    // if still under 30, pad by cycling base with modifiers
+    const modPad=['pastel version','dark ink version','glitter sparkle version',
+      'chibi tiny version','extra fluffy version'];
+    let padded=[...combined];
+    let mi=0;
+    while(padded.length<TARGET){
+      padded.push(`${base[mi%base.length]||generic[mi%generic.length]}, ${modPad[Math.floor(mi/base.length)%modPad.length]}`);
+      mi++;
+    }
+    return padded.slice(0,TARGET);
   },
 
   applyTemplate(tpl){
