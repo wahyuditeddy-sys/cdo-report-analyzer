@@ -1459,6 +1459,118 @@ body.simple-mode .expert-only{display:none!important}
 }
 .flow-arrow{color:var(--ac);font-size:18px;font-weight:700}
 .gm-table-wrap{overflow-x:auto}
+
+/* ── CUSTOM CHARACTER PANEL ── */
+.custom-char-panel{
+  background:linear-gradient(135deg,rgba(0,255,221,.06),rgba(201,63,255,.04));
+  border:1px solid rgba(0,255,221,.25);
+  border-radius:var(--rad2);
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.custom-char-panel.active-mode{
+  border-color:var(--cy);
+  box-shadow:0 0 12px rgba(0,255,221,.2);
+}
+.custom-char-label{
+  font-size:10px;
+  color:var(--txt3);
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  font-family:'JetBrains Mono',monospace;
+  margin-bottom:2px;
+}
+.custom-char-input{
+  background:var(--bg4);
+  border:1px solid var(--brd2);
+  border-radius:var(--rad);
+  color:var(--txt);
+  font-size:12px;
+  font-family:'Inter',sans-serif;
+  padding:8px 10px;
+  width:100%;
+  transition:var(--trans);
+  outline:none;
+}
+.custom-char-input:focus{
+  border-color:var(--cy);
+  box-shadow:0 0 0 2px rgba(0,255,221,.15);
+}
+.custom-char-input::placeholder{color:var(--txt3)}
+.custom-char-textarea{
+  background:var(--bg4);
+  border:1px solid var(--brd2);
+  border-radius:var(--rad);
+  color:var(--txt);
+  font-size:11px;
+  font-family:'Inter',sans-serif;
+  padding:8px 10px;
+  width:100%;
+  resize:vertical;
+  min-height:56px;
+  max-height:120px;
+  transition:var(--trans);
+  outline:none;
+  line-height:1.5;
+}
+.custom-char-textarea:focus{
+  border-color:var(--cy);
+  box-shadow:0 0 0 2px rgba(0,255,221,.15);
+}
+.custom-char-textarea::placeholder{color:var(--txt3)}
+.art-style-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.art-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:20px;
+  color:var(--txt3);
+  font-size:10px;
+  font-weight:600;
+  padding:4px 10px;
+  cursor:pointer;
+  transition:var(--trans);
+  white-space:nowrap;
+}
+.art-btn:hover{border-color:var(--cy);color:var(--cy)}
+.art-btn.active{
+  background:rgba(0,255,221,.12);
+  border-color:var(--cy);
+  color:var(--cy);
+}
+.custom-action-row{
+  display:flex;
+  gap:6px;
+}
+.custom-action-row .btn{flex:1}
+.custom-badge{
+  display:none;
+  background:rgba(0,255,221,.15);
+  border:1px solid var(--cy);
+  border-radius:20px;
+  color:var(--cy);
+  font-size:10px;
+  font-weight:700;
+  padding:3px 10px;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+}
+.custom-badge.visible{display:flex}
+.custom-clear-btn{
+  background:none;
+  border:none;
+  color:var(--txt3);
+  font-size:12px;
+  cursor:pointer;
+  padding:0 4px;
+}
+.custom-clear-btn:hover{color:var(--rd)}
 </style>
 </head>
 <body>
@@ -1499,6 +1611,55 @@ body.simple-mode .expert-only{display:none!important}
     <div class="qs-panel">
       <div class="qs-title">⚡ Quick Start — 1 Klik Generate</div>
       <div class="qs-grid" id="qsGrid"></div>
+    </div>
+
+    <!-- CUSTOM CHARACTER -->
+    <div class="sidebar-section">
+      <div class="sidebar-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>✏️ Custom Karakter</span>
+        <div class="custom-badge" id="customBadge">
+          <span>● AKTIF</span>
+          <button class="custom-clear-btn" onclick="S.clearCustom()" title="Reset custom character">✕</button>
+        </div>
+      </div>
+      <div class="custom-char-panel" id="customCharPanel">
+
+        <div>
+          <div class="custom-char-label">Nama Karakter *</div>
+          <input type="text" id="customCharName" class="custom-char-input"
+            placeholder="mis: Naruto, SpongeBob, Pikachu, karakter OC..."
+            oninput="S.onCustomInput()" maxlength="80">
+        </div>
+
+        <div>
+          <div class="custom-char-label">Art Style</div>
+          <div class="art-style-row" id="artStyleRow">
+            <button class="art-btn active" data-art="kawaii" onclick="S.setArtStyle('kawaii',this)">🌸 Kawaii</button>
+            <button class="art-btn" data-art="chibi" onclick="S.setArtStyle('chibi',this)">🤏 Chibi</button>
+            <button class="art-btn" data-art="anime" onclick="S.setArtStyle('anime',this)">⚡ Anime</button>
+            <button class="art-btn" data-art="cute" onclick="S.setArtStyle('cute',this)">🎀 Cute</button>
+            <button class="art-btn" data-art="funny" onclick="S.setArtStyle('funny',this)">😂 Funny</button>
+            <button class="art-btn" data-art="gothic" onclick="S.setArtStyle('gothic',this)">🖤 Gothic</button>
+            <button class="art-btn" data-art="pixel" onclick="S.setArtStyle('pixel',this)">🟦 Pixel</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="custom-char-label">Deskripsi Tambahan (opsional)</div>
+          <textarea id="customCharDesc" class="custom-char-textarea"
+            placeholder="Warna, outfit, ekspresi, ciri khas... (mis: orange jumpsuit, spiky blonde hair, headband)"
+            maxlength="300"></textarea>
+        </div>
+
+        <div class="custom-action-row">
+          <button class="btn btn-primary btn-sm" onclick="S.generateCustom()">✨ Generate</button>
+          <button class="btn btn-ye btn-sm" onclick="S.generateCustomVars()">⚡ 30 Vars</button>
+        </div>
+
+        <div style="font-size:10px;color:var(--txt3);line-height:1.5">
+          💡 Semua setting aktif (engine, platform, finish, cut) tetap berlaku untuk karakter custom.
+        </div>
+      </div>
     </div>
 
     <!-- PLATFORM (Simple: compact pills | Expert: full grid) -->
@@ -2472,6 +2633,8 @@ const S={
   iconCount:24,
   commercialMode:false,
   expertMode:false,
+  customArtStyle:'kawaii',
+  isCustomMode:false,
 
   init(){
     this.setMode('simple'); // default Simple mode
@@ -3400,6 +3563,121 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
 
   // alias for toggleCommercial
   showToast(msg,dur,color){this.toast(msg,dur,color);},
+
+  // ── CUSTOM CHARACTER ───────────────────────────────
+  setArtStyle(style,btn){
+    this.customArtStyle=style;
+    document.querySelectorAll('.art-btn').forEach(b=>b.classList.remove('active'));
+    if(btn)btn.classList.add('active');
+  },
+
+  onCustomInput(){
+    const name=(document.getElementById('customCharName').value||'').trim();
+    const panel=document.getElementById('customCharPanel');
+    const badge=document.getElementById('customBadge');
+    const active=name.length>0;
+    panel.classList.toggle('active-mode',active);
+    badge.classList.toggle('visible',active);
+    this.isCustomMode=active;
+  },
+
+  clearCustom(){
+    document.getElementById('customCharName').value='';
+    document.getElementById('customCharDesc').value='';
+    this.isCustomMode=false;
+    document.getElementById('customCharPanel').classList.remove('active-mode');
+    document.getElementById('customBadge').classList.remove('visible');
+    this.toast('Custom character di-reset',1500);
+  },
+
+  buildCustomCat(){
+    const name=(document.getElementById('customCharName')?.value||'').trim();
+    if(!name)return null;
+    const desc=(document.getElementById('customCharDesc')?.value||'').trim();
+    const art=this.customArtStyle||'kawaii';
+    const styleMap={
+      kawaii:'kawaii chibi character, soft pastel palette, round chubby features, sparkle eyes, cute expression, digital illustration',
+      chibi:'super deformed chibi character, big head small body ratio 1:1, round eyes, minimal features, clean lineart',
+      anime:'anime style character, expressive large eyes, dynamic pose, vibrant saturated colors, manga influence',
+      cute:'cute cartoon illustration, simple clean lines, cheerful happy expression, bright cheerful colors, friendly design',
+      funny:'funny cartoon character, exaggerated comical expression, humorous silly pose, bold outlines, expressive',
+      gothic:'gothic kawaii character, pastel goth aesthetic, dark cute fusion, black and pastel color palette, spooky cute',
+      pixel:'pixel art character, 16-bit retro style, chunky pixel blocks, limited color palette, classic game aesthetic',
+    };
+    const styleDesc=styleMap[art]||styleMap.kawaii;
+    const core=desc?`${name} character, ${desc}, ${styleDesc}`:`${name} character, ${styleDesc}`;
+    const coreCommercial=desc
+      ?`original character inspired by ${name} aesthetic, ${desc}, ${styleDesc}`
+      :`original character inspired by ${name} aesthetic, ${styleDesc}`;
+
+    // Auto-generate 12 expression/pose vars from character name
+    const exprVars=[
+      `${name} happy waving hand`,`${name} sleeping Zzz kawaii`,`${name} eating snack chibi`,
+      `${name} crying big tears cute`,`${name} excited jumping pose`,`${name} thinking finger chin`,
+      `${name} heart love hands`,`${name} angry pout cheeks`,`${name} laughing open mouth`,
+      `${name} shy blushing cheeks`,`${name} cool sunglasses peace sign`,`${name} surprised shocked eyes`,
+      `${name} dancing happy spin`,`${name} thumbs up approve`,`${name} running chibi`,
+      `${name} reading book focused`,`${name} holding star magic`,`${name} stretching yawn`,
+      `${name} winking cute`,`${name} confused question mark`,`${name} singing microphone`,
+      `${name} gaming controller chibi`,`${name} coffee cup morning`,`${name} umbrella rain`,
+      `${name} flower crown nature`,`${name} ghost spooky play`,`${name} chef cook hat`,
+      `${name} superhero cape fly`,`${name} winter scarf snow`,`${name} birthday cake candle`
+    ];
+    const kws=[name,'kawaii sticker',art,'custom character sticker','chibi','digital sticker',
+      'transparent PNG','print on demand','die cut sticker','cute illustration'];
+    return{
+      id:'custom',i:'✏️',t:name,
+      sub:desc||`${name} custom character sticker in ${art} style`,
+      core,coreCommercial,
+      licensed:false,demand:'hi',
+      keywords:kws,
+      neg:'ugly, deformed, extra limbs, duplicate, text, watermark, blur, low quality, worst quality, bad anatomy',
+      seoBase:`${name} custom character sticker kawaii ${art} chibi`,
+      vars:exprVars
+    };
+  },
+
+  generateCustom(){
+    const cat=this.buildCustomCat();
+    if(!cat){
+      this.toast('⚠️ Masukkan nama karakter dulu!',2000,'#ff6b6b');
+      document.getElementById('customCharName')?.focus();
+      return;
+    }
+    const prompt=this.buildPrompt(this.engine,cat);
+    this.lastPrompts[this.engine]=prompt;
+    this.addHistory(prompt,cat);
+    this.setTab('prompt');
+    this.renderSinglePrompt(prompt,cat);
+    this.toast(`✅ Prompt untuk "${cat.t}" siap!`,2000);
+  },
+
+  generateCustomVars(){
+    const cat=this.buildCustomCat();
+    if(!cat){
+      this.toast('⚠️ Masukkan nama karakter dulu!',2000,'#ff6b6b');
+      document.getElementById('customCharName')?.focus();
+      return;
+    }
+    const TARGET=30;
+    const seeds=[...cat.vars];
+    const modPad=['pastel chibi version','dark ink outline version','glitter sparkle version','extra tiny chibi','rainbow color version'];
+    let mi=0;
+    while(seeds.length<TARGET){
+      seeds.push(`${cat.vars[mi%cat.vars.length]}, ${modPad[Math.floor(mi/cat.vars.length)%modPad.length]}`);
+      mi++;
+    }
+    const vars=seeds.slice(0,TARGET).map((seed,i)=>({
+      num:i+1,seed,
+      prompt:this.buildPrompt(this.engine,cat,seed)
+    }));
+    this.lastVariations=vars;
+    this.varCount=vars.length;
+    this.updateStats();
+    this.setTab('variations');
+    this.renderVariationsPanel();
+    this.toast(`⚡ ${vars.length} variasi untuk "${cat.t}" generated!`,2000);
+  },
 
   // ── PANDUAN MODAL ──────────────────────────────────
   openGuide(){
