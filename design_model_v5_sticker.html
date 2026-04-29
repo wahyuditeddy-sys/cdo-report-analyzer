@@ -1575,6 +1575,33 @@ body.simple-mode .expert-only{display:none!important}
   border-color:var(--cy);
   color:var(--cy);
 }
+.art-btn.mature.active{
+  background:rgba(201,63,255,.15);
+  border-color:var(--ac);
+  color:var(--ac);
+}
+.art-btn.mature:hover{border-color:var(--ac);color:var(--ac)}
+.art-style-group-label{
+  font-size:9px;
+  color:var(--txt3);
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  margin:6px 0 4px;
+  padding-top:6px;
+  border-top:1px solid var(--brd);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.art-style-group-label span{
+  background:rgba(201,63,255,.15);
+  color:var(--ac);
+  border:1px solid rgba(201,63,255,.3);
+  border-radius:20px;
+  padding:1px 7px;
+  font-size:9px;
+}
 .custom-action-row{
   display:flex;
   gap:6px;
@@ -1665,14 +1692,38 @@ body.simple-mode .expert-only{display:none!important}
 
         <div>
           <div class="custom-char-label">Art Style</div>
-          <div class="art-style-row" id="artStyleRow">
+
+          <!-- GRUP 1: Kawaii & Chibi -->
+          <div class="art-style-group-label">🌸 Kawaii & Chibi</div>
+          <div class="art-style-row">
             <button class="art-btn active" data-art="kawaii" onclick="S.setArtStyle('kawaii',this)">🌸 Kawaii</button>
             <button class="art-btn" data-art="chibi" onclick="S.setArtStyle('chibi',this)">🤏 Chibi</button>
-            <button class="art-btn" data-art="anime" onclick="S.setArtStyle('anime',this)">⚡ Anime</button>
             <button class="art-btn" data-art="cute" onclick="S.setArtStyle('cute',this)">🎀 Cute</button>
             <button class="art-btn" data-art="funny" onclick="S.setArtStyle('funny',this)">😂 Funny</button>
-            <button class="art-btn" data-art="gothic" onclick="S.setArtStyle('gothic',this)">🖤 Gothic</button>
             <button class="art-btn" data-art="pixel" onclick="S.setArtStyle('pixel',this)">🟦 Pixel</button>
+          </div>
+
+          <!-- GRUP 2: Anime & Character -->
+          <div class="art-style-group-label">⚡ Anime & Character</div>
+          <div class="art-style-row">
+            <button class="art-btn" data-art="anime" onclick="S.setArtStyle('anime',this)">⚡ Anime</button>
+            <button class="art-btn" data-art="shoujo" onclick="S.setArtStyle('shoujo',this)">💞 Shoujo</button>
+            <button class="art-btn" data-art="gothic" onclick="S.setArtStyle('gothic',this)">🖤 Gothic</button>
+            <button class="art-btn" data-art="baddie" onclick="S.setArtStyle('baddie',this)">💅 Baddie</button>
+            <button class="art-btn" data-art="aesthetic" onclick="S.setArtStyle('aesthetic',this)">🌿 Aesthetic</button>
+          </div>
+
+          <!-- GRUP 3: Mature & Persona (17+) -->
+          <div class="art-style-group-label">🎭 Mature & Persona <span>17+</span></div>
+          <div class="art-style-row">
+            <button class="art-btn mature" data-art="noir" onclick="S.setArtStyle('noir',this)">🎬 Noir</button>
+            <button class="art-btn mature" data-art="dark_fantasy" onclick="S.setArtStyle('dark_fantasy',this)">🌑 Dark Fantasy</button>
+            <button class="art-btn mature" data-art="grunge" onclick="S.setArtStyle('grunge',this)">🎸 Grunge</button>
+            <button class="art-btn mature" data-art="academia" onclick="S.setArtStyle('academia',this)">📚 Academia</button>
+            <button class="art-btn mature" data-art="luxe" onclick="S.setArtStyle('luxe',this)">💎 Luxe</button>
+            <button class="art-btn mature" data-art="mystical" onclick="S.setArtStyle('mystical',this)">🔮 Mystical</button>
+            <button class="art-btn mature" data-art="streetwear" onclick="S.setArtStyle('streetwear',this)">🧢 Streetwear</button>
+            <button class="art-btn mature" data-art="y2k" onclick="S.setArtStyle('y2k',this)">📀 Y2K</button>
           </div>
         </div>
 
@@ -3708,13 +3759,27 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
     const desc=(document.getElementById('customCharDesc')?.value||'').trim();
     const art=this.customArtStyle||'kawaii';
     const styleMap={
+      // ── KAWAII & CHIBI ──
       kawaii:'kawaii chibi character, soft pastel palette, round chubby features, sparkle eyes, cute expression, digital illustration',
       chibi:'super deformed chibi character, big head small body ratio 1:1, round eyes, minimal features, clean lineart',
-      anime:'anime style character, expressive large eyes, dynamic pose, vibrant saturated colors, manga influence',
       cute:'cute cartoon illustration, simple clean lines, cheerful happy expression, bright cheerful colors, friendly design',
       funny:'funny cartoon character, exaggerated comical expression, humorous silly pose, bold outlines, expressive',
-      gothic:'gothic kawaii character, pastel goth aesthetic, dark cute fusion, black and pastel color palette, spooky cute',
       pixel:'pixel art character, 16-bit retro style, chunky pixel blocks, limited color palette, classic game aesthetic',
+      // ── ANIME & CHARACTER ──
+      anime:'anime style character, expressive large eyes, dynamic action pose, vibrant saturated colors, manga influence, detailed hair',
+      shoujo:'shoujo manga aesthetic, sparkly screen tone background, soft romantic expression, delicate lineart, floral framing, pastel blush tones, dreamy feminine mood',
+      gothic:'gothic kawaii character, pastel goth aesthetic, dark cute fusion, black and pastel color palette, skull motif accent, spooky cute',
+      baddie:'baddie aesthetic character, confident fierce expression, attitude pose, urban streetstyle fashion, sharp defined eyes, high-contrast bold colors, empowered look',
+      aesthetic:'vsco lofi aesthetic character, soft dreamy warm tones, cottagecore or indie vibe, natural lighting feel, muted earthy palette, chill effortless mood',
+      // ── MATURE & PERSONA (17+) ──
+      noir:'film noir cinematic illustration, high contrast deep shadows, moody atmospheric, dramatic single light source, black and white with selective color accent, mysterious silhouette, detective pulp art style',
+      dark_fantasy:'dark fantasy epic illustration, dramatic lighting, intricate armor or mystical outfit detail, atmospheric depth, rich jewel tone palette deep purple crimson gold, fantasy creature motif, powerful aura glow effect',
+      grunge:'grunge alternative aesthetic character, raw expressive brushwork, distressed texture overlay, rebellious energy, muted desaturated palette with bold ink lines, punk rock attitude, imperfect rough style',
+      academia:'dark academia aesthetic character, vintage intellectual portrait style, warm sepia and mahogany tones, classic literary mood, detailed book or quill prop, old European painting influence, moody candlelight atmosphere',
+      luxe:'high fashion luxury illustration, editorial magazine aesthetic, elegant sophisticated pose, couture outfit detail, gold and monochrome rich palette, minimalist negative space, glamour studio lighting feel',
+      mystical:'mystical ethereal character, otherworldly soft glow aura, celestial moon and star motifs, iridescent holographic palette, flowing magical energy lines, oracle divination aesthetic, spiritual transcendent mood',
+      streetwear:'streetwear urban character, contemporary hip-hop inspired outfit, bold graphic elements, clean line art with color block fills, sneaker culture detail, confident cool pose, modern youth culture aesthetic',
+      y2k:'Y2K retro futuristic aesthetic, early 2000s nostalgia, chrome metallic and holographic elements, bold cyber pink and electric blue palette, matrix digital glitch texture, millennium pop culture references, glossy plastic sheen',
     };
     const styleDesc=styleMap[art]||styleMap.kawaii;
     const core=desc?`${name} character, ${desc}, ${styleDesc}`:`${name} character, ${styleDesc}`;
