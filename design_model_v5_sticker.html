@@ -900,6 +900,148 @@ body{
   border:1px solid rgba(255,214,0,.3);
   font-family:'JetBrains Mono',monospace;
 }
+/* ══ SIMPLE / EXPERT MODE ══ */
+.mode-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:linear-gradient(90deg,rgba(201,63,255,.08),rgba(0,255,221,.04));
+  border-bottom:1px solid var(--brd);
+}
+.mode-label{font-size:11px;font-weight:600;color:var(--txt2);display:flex;align-items:center;gap:6px}
+.mode-pill{
+  display:flex;
+  background:var(--bg4);
+  border:1px solid var(--brd2);
+  border-radius:20px;
+  padding:2px;
+  gap:2px;
+}
+.mode-pill-btn{
+  padding:4px 12px;
+  border-radius:16px;
+  border:none;
+  font-size:10px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  transition:var(--trans);
+  color:var(--txt3);
+  background:transparent;
+  letter-spacing:.3px;
+}
+.mode-pill-btn.active{
+  background:linear-gradient(135deg,var(--ac),var(--ac2));
+  color:#fff;
+  box-shadow:0 2px 8px rgba(201,63,255,.4);
+}
+
+/* Expert-only sections hidden in simple mode */
+.expert-only{display:block}
+body.simple-mode .expert-only{display:none!important}
+
+/* ── QUICKSTART PANEL ── */
+.qs-panel{
+  padding:12px 16px;
+  border-bottom:1px solid var(--brd);
+  background:var(--bg2);
+}
+.qs-title{
+  font-size:10px;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:1px;
+  font-family:'JetBrains Mono',monospace;
+  margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.qs-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+.qs-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:var(--rad);
+  padding:7px 8px;
+  cursor:pointer;
+  text-align:left;
+  transition:var(--trans);
+  display:flex;flex-direction:column;gap:2px;
+}
+.qs-btn:hover{border-color:var(--ac);background:rgba(201,63,255,.06)}
+.qs-btn-top{display:flex;align-items:center;gap:5px}
+.qs-ic{font-size:15px;flex-shrink:0}
+.qs-name{font-size:10px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qs-meta{font-size:9px;color:var(--txt3);font-family:'JetBrains Mono',monospace;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qs-badges{display:flex;gap:3px;flex-wrap:wrap}
+.qs-badge{
+  font-size:8px;padding:1px 5px;border-radius:6px;
+  background:var(--bg5);border:1px solid var(--brd2);
+  color:var(--txt3);font-family:'JetBrains Mono',monospace;
+}
+
+/* ── SIMPLE ENGINE TABS (bigger, fewer) ── */
+.engine-simple{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+.eng-simple-btn{
+  background:var(--bg4);
+  border:1px solid var(--brd);
+  border-radius:var(--rad);
+  padding:10px 6px;
+  cursor:pointer;
+  text-align:center;
+  font-size:11px;
+  font-weight:600;
+  color:var(--txt2);
+  transition:var(--trans);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.eng-simple-btn .eng-ic{font-size:18px}
+.eng-simple-btn:hover{border-color:var(--ye);color:var(--ye)}
+.eng-simple-btn.active{
+  background:rgba(255,214,0,.1);
+  border-color:var(--ye);color:var(--ye);
+  box-shadow:var(--glow-ye);
+}
+
+/* simple mode platform bar — compact row */
+.plat-simple{display:flex;flex-wrap:wrap;gap:4px}
+.plat-simple-btn{
+  background:var(--bg4);border:1px solid var(--brd);
+  border-radius:20px;padding:4px 10px;
+  font-size:10px;cursor:pointer;color:var(--txt2);
+  transition:var(--trans);
+}
+.plat-simple-btn:hover{border-color:var(--ac);color:var(--ac)}
+.plat-simple-btn.active{background:rgba(201,63,255,.12);border-color:var(--ac);color:var(--ac)}
+
+/* ── USAGE GUIDE ── */
+.guide-wrap{padding:0}
+.guide-step{
+  background:var(--card);border:1px solid var(--brd);
+  border-radius:var(--rad2);padding:14px;
+  display:flex;gap:12px;
+}
+.step-num{
+  width:28px;height:28px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;color:#fff;
+}
+.step-body h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.step-body p{font-size:11px;color:var(--txt2);line-height:1.6}
+.step-body code{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:var(--bg4);border-radius:3px;padding:1px 5px;color:var(--cy);
+}
+.guide-section-title{
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;
+  color:var(--ac);margin:16px 0 8px;
+}
+
 /* ── DEMAND BADGES ── */
 .demand-badge{
   font-size:8px;
@@ -1096,41 +1238,67 @@ body{
   <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <!-- PLATFORM -->
-    <div class="sidebar-section">
-      <div class="sidebar-title">Platform</div>
-      <div class="platform-grid">
-        <button class="plat-btn active" data-plat="etsy" onclick="S.setPlatform('etsy')">
-          <span class="plat-icon">🛍️</span>Etsy
-        </button>
-        <button class="plat-btn" data-plat="redbubble" onclick="S.setPlatform('redbubble')">
-          <span class="plat-icon">🫧</span>Redbubble
-        </button>
-        <button class="plat-btn" data-plat="line" onclick="S.setPlatform('line')">
-          <span class="plat-icon">💬</span>LINE
-        </button>
-        <button class="plat-btn" data-plat="whatsapp" onclick="S.setPlatform('whatsapp')">
-          <span class="plat-icon">📱</span>WhatsApp
-        </button>
-        <button class="plat-btn" data-plat="shopee" onclick="S.setPlatform('shopee')">
-          <span class="plat-icon">🛒</span>Shopee
-        </button>
-        <button class="plat-btn" data-plat="dtf" onclick="S.setPlatform('dtf')">
-          <span class="plat-icon">👕</span>DTF
-        </button>
+    <!-- MODE BAR -->
+    <div class="mode-bar">
+      <div class="mode-label">⚡ Mode</div>
+      <div class="mode-pill">
+        <button class="mode-pill-btn active" id="simpleModeBtn" onclick="S.setMode('simple')">Simple</button>
+        <button class="mode-pill-btn" id="expertModeBtn" onclick="S.setMode('expert')">Expert</button>
       </div>
     </div>
 
-    <!-- ENGINE -->
+    <!-- QUICK START PANEL -->
+    <div class="qs-panel">
+      <div class="qs-title">⚡ Quick Start — 1 Klik Generate</div>
+      <div class="qs-grid" id="qsGrid"></div>
+    </div>
+
+    <!-- PLATFORM (Simple: compact pills | Expert: full grid) -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">Platform Jual</div>
+      <div class="plat-simple" id="platSimple">
+        <button class="plat-simple-btn active" data-plat="etsy" onclick="S.setPlatform('etsy')">🛍️ Etsy</button>
+        <button class="plat-simple-btn" data-plat="redbubble" onclick="S.setPlatform('redbubble')">🫧 Redbubble</button>
+        <button class="plat-simple-btn" data-plat="shopee" onclick="S.setPlatform('shopee')">🛒 Shopee</button>
+        <button class="plat-simple-btn" data-plat="line" onclick="S.setPlatform('line')">💬 LINE</button>
+        <button class="plat-simple-btn" data-plat="whatsapp" onclick="S.setPlatform('whatsapp')">📱 WhatsApp</button>
+        <button class="plat-simple-btn" data-plat="dtf" onclick="S.setPlatform('dtf')">👕 DTF</button>
+      </div>
+    </div>
+
+    <!-- ENGINE (Simple: 3 utama | Expert: semua) -->
     <div class="sidebar-section">
       <div class="sidebar-title">AI Engine</div>
-      <div class="engine-tabs">
-        <button class="eng-btn active" data-eng="mj" onclick="S.setEngine('mj')">Midjourney</button>
-        <button class="eng-btn" data-eng="nb2" onclick="S.setEngine('nb2')">NB2</button>
-        <button class="eng-btn" data-eng="gem" onclick="S.setEngine('gem')">Gemini</button>
-        <button class="eng-btn" data-eng="flow" onclick="S.setEngine('flow')">Flow</button>
-        <button class="eng-btn" data-eng="sd" onclick="S.setEngine('sd')">Stable Diffusion</button>
-        <button class="eng-btn" data-eng="leo" onclick="S.setEngine('leo')">Leonardo</button>
+      <!-- Simple: 3 engine utama -->
+      <div class="engine-simple" id="engineSimple">
+        <button class="eng-simple-btn active" data-eng="mj" onclick="S.setEngine('mj')">
+          <span class="eng-ic">🎨</span>Midjourney
+        </button>
+        <button class="eng-simple-btn" data-eng="gem" onclick="S.setEngine('gem')">
+          <span class="eng-ic">✨</span>Gemini
+        </button>
+        <button class="eng-simple-btn" data-eng="nb2" onclick="S.setEngine('nb2')">
+          <span class="eng-ic">🇮🇩</span>NB2 ID
+        </button>
+        <button class="eng-simple-btn" data-eng="en2" onclick="S.setEngine('en2')">
+          <span class="eng-ic">🇬🇧</span>EN Struct
+        </button>
+        <button class="eng-simple-btn" data-eng="flow" onclick="S.setEngine('flow')">
+          <span class="eng-ic">🌊</span>Flow
+        </button>
+        <button class="eng-simple-btn" data-eng="leo" onclick="S.setEngine('leo')">
+          <span class="eng-ic">🦁</span>Leonardo
+        </button>
+      </div>
+      <!-- Expert: all tabs (hidden in simple) -->
+      <div class="engine-tabs expert-only" id="engineExpert" style="margin-top:8px;display:none">
+        <button class="eng-btn active" data-eng2="mj" onclick="S.setEngine('mj')">Midjourney</button>
+        <button class="eng-btn" data-eng2="nb2" onclick="S.setEngine('nb2')">NB2 ID</button>
+        <button class="eng-btn" data-eng2="en2" onclick="S.setEngine('en2')">EN Struct</button>
+        <button class="eng-btn" data-eng2="gem" onclick="S.setEngine('gem')">Gemini</button>
+        <button class="eng-btn" data-eng2="flow" onclick="S.setEngine('flow')">Flow</button>
+        <button class="eng-btn" data-eng2="sd" onclick="S.setEngine('sd')">Stable Diffusion</button>
+        <button class="eng-btn" data-eng2="leo" onclick="S.setEngine('leo')">Leonardo</button>
       </div>
     </div>
 
@@ -1158,7 +1326,7 @@ body{
     </div>
 
     <!-- STICKER TECH -->
-    <div class="sidebar-section">
+    <div class="sidebar-section expert-only">
       <div class="sidebar-title">Sticker Technical</div>
       <div class="tech-grid">
         <div class="tech-group">
@@ -1207,7 +1375,7 @@ body{
     </div>
 
     <!-- COMMERCIAL SAFE MODE -->
-    <div class="sidebar-section">
+    <div class="sidebar-section expert-only">
       <div class="commercial-bar">
         <div>
           <div class="commercial-label">⚖️ Commercial Safe Mode</div>
@@ -1221,7 +1389,7 @@ body{
     </div>
 
     <!-- STICKER FORMAT -->
-    <div class="sidebar-section">
+    <div class="sidebar-section expert-only">
       <div class="sidebar-title">Sticker Format</div>
       <div class="format-toggle">
         <button class="fmt-btn active" data-fmt="single" onclick="S.setFormat('single')">
@@ -1275,7 +1443,7 @@ body{
     </div>
 
     <!-- VARIATION MODE -->
-    <div class="sidebar-section">
+    <div class="sidebar-section expert-only">
       <div class="sidebar-title">Variation Mode</div>
       <div class="var-modes">
         <button class="var-btn active" data-var="standard" onclick="S.setVarMode('standard')">
@@ -1300,7 +1468,7 @@ body{
     </div>
 
     <!-- MODIFIERS -->
-    <div class="sidebar-section">
+    <div class="sidebar-section expert-only">
       <div class="sidebar-title">Style Modifiers</div>
       <div class="mods-grid" id="modsGrid"></div>
     </div>
@@ -1857,6 +2025,28 @@ const PLATFORMS={
 };
 
 // ══════════════════════════════════════════════════
+// QUICKSTART COMBOS
+// ══════════════════════════════════════════════════
+const QUICKSTART=[
+  {i:'🔥',n:'Trending Kawaii',cat:'dark_kawaii',engine:'mj',platform:'etsy',finish:'glossy',cut:'die_cut',outline:'ultra_black',
+   tags:['Etsy','MJ','die-cut']},
+  {i:'🌙',n:'Idul Adha Pack',cat:'idul_adha',engine:'mj',platform:'etsy',finish:'holographic',cut:'die_cut',outline:'ultra_black',
+   tags:['Etsy','MJ','holo']},
+  {i:'🎀',n:'Sanrio Style',cat:'sanrio_style',engine:'gem',platform:'shopee',finish:'glossy',cut:'die_cut',outline:'white_halo',
+   tags:['Shopee','Gemini','safe']},
+  {i:'🦕',n:'Kids Dino Set',cat:'kids_dino_animals',engine:'nb2',platform:'etsy',finish:'glossy',cut:'die_cut',outline:'ultra_black',
+   tags:['Etsy','NB2 ID','kids']},
+  {i:'🇮🇩',n:'17 Agustus',cat:'indonesia_17agustus',engine:'mj',platform:'shopee',finish:'glossy',cut:'die_cut',outline:'ultra_black',
+   tags:['Shopee','MJ','nasional']},
+  {i:'💬',n:'LINE Sticker',cat:'line_expression',engine:'mj',platform:'line',finish:'clear',cut:'square',outline:'white_halo',
+   tags:['LINE','MJ','expression']},
+  {i:'📓',n:'Digital Planner',cat:'planner_bujo',engine:'en2',platform:'etsy',finish:'matte',cut:'square',outline:'no_outline',
+   tags:['Etsy','EN','GoodNotes']},
+  {i:'🐑',n:'Qurban Sheet',cat:'idul_adha',engine:'mj',platform:'etsy',finish:'holographic',cut:'die_cut',outline:'ultra_black',
+   tags:['Sheet 6×4','MJ','24 icons']},
+];
+
+// ══════════════════════════════════════════════════
 // MODIFIERS
 // ══════════════════════════════════════════════════
 const MODS_LIST=[
@@ -2028,8 +2218,11 @@ const S={
   gridLayout:'custom',
   iconCount:24,
   commercialMode:false,
+  expertMode:false,
 
   init(){
+    this.setMode('simple'); // default Simple mode
+    this.renderQuickstart();
     this.renderCats();
     this.renderMods();
     this.renderTemplates();
@@ -2064,6 +2257,57 @@ const S={
   setFinish(v){this.finish=v;this.updateStats()},
   setSize(v){this.sizePreset=v;this.updateStats()},
   setOutline(v){this.outlineStyle=v;this.updateStats()},
+
+  setMode(m){
+    this.expertMode=(m==='expert');
+    document.body.classList.toggle('simple-mode',!this.expertMode);
+    document.getElementById('simpleModeBtn')?.classList.toggle('active',!this.expertMode);
+    document.getElementById('expertModeBtn')?.classList.toggle('active',this.expertMode);
+    // toggle simple vs expert engine display
+    const es=document.getElementById('engineSimple');
+    const ee=document.getElementById('engineExpert');
+    if(es) es.style.display=this.expertMode?'none':'grid';
+    if(ee) ee.style.display=this.expertMode?'flex':'none';
+    this.toast(this.expertMode?'🔧 Expert Mode — semua opsi aktif':'⚡ Simple Mode — tampilan ringkas',2000);
+  },
+
+  renderQuickstart(){
+    const g=document.getElementById('qsGrid');
+    if(!g)return;
+    g.innerHTML=QUICKSTART.map((q,i)=>`
+      <button class="qs-btn" onclick="S.applyQuickstart(${i})">
+        <div class="qs-btn-top">
+          <span class="qs-ic">${q.i}</span>
+          <span class="qs-name">${q.n}</span>
+        </div>
+        <div class="qs-badges">
+          ${q.tags.map(t=>`<span class="qs-badge">${t}</span>`).join('')}
+        </div>
+      </button>
+    `).join('');
+  },
+
+  applyQuickstart(idx){
+    const q=QUICKSTART[idx];
+    if(!q)return;
+    this.setCat(q.cat);
+    this.setEngine(q.engine);
+    this.setPlatform(q.platform);
+    this.cutType=q.cut||'die_cut';
+    this.finish=q.finish||'glossy';
+    this.outlineStyle=q.outline||'ultra_black';
+    // Qurban Sheet quickstart → enable sheet 6x4
+    if(idx===7){this.setFormat('sheet');this.setGrid('6x4',24);}
+    else this.setFormat('single');
+    // sync dropdowns
+    ['selCut','selFinish','selOutline'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.value=id==='selCut'?this.cutType:id==='selFinish'?this.finish:this.outlineStyle;
+    });
+    this.updateStats();
+    this.generate();
+    this.toast(`✅ ${q.n} — prompt generated!`,2500);
+  },
 
   toggleCommercial(v){
     this.commercialMode=!!v;
@@ -2310,6 +2554,49 @@ Flow Settings:
 • Model: Anything V5 / DreamShaper / Counterfeit-V30`;
   },
 
+  buildEN2(cat,extra=''){
+    const c=cat||CATS.find(x=>x.id===this.cat);
+    const core=this.getCoreStr(c);
+    const tb=this.getStickerTechBlock();
+    const mods=this.getModsStr();
+    const plat=PLATFORMS[this.platform];
+    const safeNote=c.licensed?(this.commercialMode?'✅ COMMERCIAL SAFE VERSION':'⚠️ REFERENCE ONLY — do NOT sell'):'';
+    const formatLine=tb.isSheet
+      ?`Sheet Pack — Grid ${tb.grid||'custom'}, ${tb.iconCount} icons, kiss-cut`
+      :'Single Icon';
+    return `════ STICKER PROMPT — ${c.t.toUpperCase()} ════${safeNote?' ['+safeNote+']':''}
+
+📌 CATEGORY    : ${c.t}
+🎨 STYLE       : ${c.sub}
+🖼️ FORMAT      : ${formatLine}
+📐 TECH        : ${tb.size}, ${tb.cut}, ${tb.outline}
+✨ FINISH      : ${tb.finish}
+📦 PLATFORM    : ${plat.name}
+${extra?'🔄 VARIATION   : '+extra:''}
+════ VISUAL DESCRIPTION ════
+
+${core}${mods?'\nStyle modifiers: '+mods:''}.
+${tb.isSheet?`Design a sheet of ${tb.iconCount} icons arranged in ${tb.grid||'custom'} grid.\nEach icon is independent, uniform size, evenly spaced.`:'Single character fully isolated on transparent background.'}
+Color palette: ${c.keywords.slice(0,4).join(', ')}.
+Illustration style: kawaii chibi, digital art, clean linework, medium detail.
+
+════ KEYWORDS ════
+
+${c.keywords.join(' | ')}
+
+════ NEGATIVE PROMPT ════
+
+${c.neg}
+
+════ PLATFORM SPECS ════
+
+Size: ${tb.size}
+Format: PNG transparent, 300 DPI minimum
+${tb.isSheet?'Layout: Sheet '+tb.grid+' | '+tb.iconCount+' icons | kiss-cut':'Cut type: '+tb.cut}
+Finishing: ${tb.finish}
+Platform upload: ${plat.sizeNote||'See platform guidelines'}`;
+  },
+
   buildLeonardo(cat,extra=''){
     const c=cat||CATS.find(x=>x.id===this.cat);
     const core=this.getCoreStr(c);
@@ -2334,13 +2621,14 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
     const e=engine||this.engine;
     const c=cat||(CATS.find(x=>x.id===this.cat));
     switch(e){
-      case 'mj': return this.buildMJ(c,extra);
-      case 'nb2': return this.buildNB2(c,extra);
-      case 'sd': return this.buildSD(c,extra);
-      case 'gem': return this.buildGemini(c,extra);
+      case 'mj':   return this.buildMJ(c,extra);
+      case 'nb2':  return this.buildNB2(c,extra);
+      case 'en2':  return this.buildEN2(c,extra);
+      case 'sd':   return this.buildSD(c,extra);
+      case 'gem':  return this.buildGemini(c,extra);
       case 'flow': return this.buildFlow(c,extra);
-      case 'leo': return this.buildLeonardo(c,extra);
-      default: return this.buildMJ(c,extra);
+      case 'leo':  return this.buildLeonardo(c,extra);
+      default:     return this.buildMJ(c,extra);
     }
   },
 
@@ -2614,71 +2902,143 @@ Alchemy: On | PhotoReal: Off | Guidance: 7 | Steps: 30 | Contrast: High`;
   renderTips(){
     const area=document.getElementById('outputArea');
     area.innerHTML=`
+    <div style="max-width:800px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+
+      <div class="guide-section-title">📖 CARA PAKAI — SIMPLE MODE (Pemula)</div>
+
+      <div class="guide-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Pilih tema stiker (Category)</h4>
+          <p>Cari kategori yang kamu inginkan di sidebar kiri. Gunakan <code>Search</code> atau filter bulan (Jan–Dec).
+          Badge <span style="color:#ff6b6b;font-weight:700">HIGH</span> = permintaan pasar tinggi.
+          Badge <span style="color:var(--gr);font-weight:700">4-7y</span> = cocok untuk anak-anak.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Pilih AI Engine</h4>
+          <p>
+            <code>🎨 Midjourney</code> — terbaik untuk kualitas visual. Paste ke Discord /imagine<br>
+            <code>✨ Gemini</code> — Google Gemini Imagen. Instruksi natural language detail<br>
+            <code>🇮🇩 NB2 ID</code> — prompt terstruktur Bahasa Indonesia<br>
+            <code>🇬🇧 EN Struct</code> — prompt terstruktur Bahasa Inggris (baru!)<br>
+            <code>🌊 Flow</code> — Stable Diffusion + settings otomatis<br>
+            <code>🦁 Leonardo</code> — Leonardo.ai dengan model recommendation
+          </p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Klik ✨ Generate Prompt</h4>
+          <p>Prompt siap pakai akan muncul di panel kanan. Klik <code>Copy</code> lalu paste langsung ke AI tool kamu.
+          Klik <code>⚡ Generate 30 Vars</code> untuk dapat 30 variasi sekaligus dari tema yang sama.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Cek SEO Panel (untuk listing toko)</h4>
+          <p>Klik tab <code>• SEO Panel</code> untuk lihat judul, tags, dan deskripsi siap upload ke Etsy / Shopee / Redbubble.
+          Klik <code>Copy</code> pada masing-masing bagian.</p>
+        </div>
+      </div>
+
+      <div class="guide-section-title">🔥 QUICK START — Cara Tercepat</div>
+
+      <div class="tip-card">
+        <h4>⚡ Gunakan panel "Quick Start" di sidebar</h4>
+        <p>Klik salah satu combo di panel <strong>Quick Start</strong> → semua setting (kategori + engine + platform + finish) otomatis diterapkan dan prompt langsung ter-generate. Tidak perlu setting manual apa pun.</p>
+        <p style="margin-top:6px"><code>🌙 Idul Adha Pack</code> → Etsy + Midjourney + holographic die-cut<br>
+        <code>🎀 Sanrio Style</code> → Shopee + Gemini + Commercial Safe<br>
+        <code>📓 Digital Planner</code> → Etsy + EN Struct + matte (GoodNotes ready)</p>
+      </div>
+
+      <div class="guide-section-title">🔧 EXPERT MODE — Fitur Lanjutan</div>
+
+      <div class="tip-card">
+        <h4>Aktifkan Expert Mode untuk akses semua opsi</h4>
+        <ul>
+          <li><strong>Sticker Technical:</strong> Cut type (die-cut/kiss-cut/square), Finish (glossy/matte/holo), Outline style</li>
+          <li><strong>Sticker Format:</strong> Single Icon vs Sheet Pack (grid 6×4=24, 4×4=16, 5×5=25, 8×4=32, 6×6=36)</li>
+          <li><strong>Variation Mode:</strong> Standard / Expression / Character / Accessory / Seasonal / Sheet</li>
+          <li><strong>Style Modifiers:</strong> Tambah efek ✨sparkle, 🌈rainbow, 🔥fire, dll</li>
+          <li><strong>⚖️ Commercial Safe Mode:</strong> Wajib ON untuk kategori Pokemon/Sanrio jika dijual komersial</li>
+        </ul>
+      </div>
+
+      <div class="guide-section-title">📐 PANDUAN TEKNIS STIKER</div>
+
       <div class="tips-grid">
         <div class="tip-card">
           <h4>🎯 Midjourney Tips</h4>
           <ul>
-            <li>Use <code>--niji 6</code> for kawaii/anime style</li>
-            <li><code>--stylize 850</code> = creative, less literal</li>
-            <li><code>--style raw</code> = more prompt-faithful</li>
-            <li>Add <code>isolated on white</code> then remove BG in Photoshop</li>
-            <li>Upscale with <code>U1–U4</code> before downloading</li>
+            <li><code>--niji 6</code> = kawaii/anime style terbaik</li>
+            <li><code>--stylize 850</code> = lebih kreatif</li>
+            <li><code>--style raw</code> = ikuti prompt persis</li>
+            <li><code>--ar 1:1</code> = square untuk single stiker</li>
+            <li><code>--ar 4:3</code> = landscape untuk sheet pack</li>
+            <li>Upscale <code>U1–U4</code> sebelum download</li>
           </ul>
         </div>
         <div class="tip-card">
-          <h4>💎 Die-Cut vs Kiss-Cut</h4>
+          <h4>💎 Format Potong Stiker</h4>
           <ul>
-            <li><strong>Die-cut:</strong> cut exactly to silhouette, best for individual stickers</li>
-            <li><strong>Kiss-cut:</strong> backing stays intact, perfect for sticker sheets</li>
-            <li><strong>Square/Circle:</strong> simpler, cheaper per unit</li>
-            <li>Etsy buyers prefer die-cut individual stickers</li>
-            <li>Sticker sheets use kiss-cut for easy peeling</li>
+            <li><strong>Die-cut:</strong> dipotong pas siluet karakter — paling premium</li>
+            <li><strong>Kiss-cut:</strong> backing utuh, untuk sheet pack, mudah dilepas</li>
+            <li><strong>Square/Circle:</strong> lebih murah, cocok untuk digital</li>
+            <li>Etsy buyers: lebih suka die-cut individual</li>
+            <li>Sheet pack: pakai kiss-cut selalu</li>
           </ul>
         </div>
         <div class="tip-card">
-          <h4>🌈 Finish Guide</h4>
+          <h4>✨ Pilih Finishing yang Tepat</h4>
           <ul>
-            <li><strong>Glossy:</strong> vibrant, popular, fingerprint-prone</li>
-            <li><strong>Matte:</strong> elegant, writable, less saturated</li>
-            <li><strong>Holographic:</strong> premium, eye-catching, higher price point</li>
-            <li><strong>Clear:</strong> minimalist, lets surface show through</li>
-            <li><strong>Glitter:</strong> sparkly, craft-focused market</li>
+            <li><strong>Glossy:</strong> warna cerah, paling populer</li>
+            <li><strong>Matte:</strong> elegan, bisa ditulis, cocok planner</li>
+            <li><strong>Holographic:</strong> premium, harga lebih tinggi</li>
+            <li><strong>Clear:</strong> minimalis, background transparan kelihatan</li>
+            <li><strong>Glitter:</strong> berkilau, pasar craft/anak-anak</li>
           </ul>
         </div>
         <div class="tip-card">
-          <h4>📦 Platform Requirements</h4>
+          <h4>📦 Spesifikasi Platform</h4>
           <ul>
-            <li><strong>Etsy:</strong> 300 DPI PNG, 3000px+ for print</li>
+            <li><strong>Etsy:</strong> PNG 300 DPI, 3000px+</li>
             <li><strong>Redbubble:</strong> 7632×6480px at 72 DPI</li>
-            <li><strong>LINE:</strong> 370×320px, max 1MB, up to 40 stickers</li>
+            <li><strong>LINE Creator:</strong> 370×320px, max 1MB</li>
             <li><strong>WhatsApp:</strong> 512×512px WebP, &lt;100KB</li>
-            <li><strong>Shopee:</strong> 800×800px minimum, 1:1 ratio</li>
+            <li><strong>Shopee Digital:</strong> 800×800px min, 1:1</li>
           </ul>
         </div>
         <div class="tip-card">
-          <h4>🔥 Best-Selling Categories</h4>
+          <h4>🔥 Kategori Paling Laris</h4>
           <ul>
-            <li>Dark Kawaii / Pastel Goth — trending on Etsy</li>
-            <li>Nurse/Teacher packs — gifting market</li>
-            <li>Planner stickers — high repeat purchase</li>
-            <li>Seasonal (Christmas, Halloween) — spike sales</li>
-            <li>Couple matching sets — Valentine's peak</li>
-            <li>K-Pop / Anime — loyal fanbase</li>
+            <li>🌙 Ramadan & Idul Adha — lonjakan musiman ID</li>
+            <li>🖤 Dark Kawaii / Pastel Goth — trending Etsy global</li>
+            <li>👩‍⚕️ Nurse/Teacher packs — pasar gifting</li>
+            <li>📓 Planner stickers — pembelian berulang</li>
+            <li>🎃 Seasonal (Halloween, Christmas) — spike penjualan</li>
+            <li>🎀 Sanrio-inspired — fanbase sangat loyal</li>
           </ul>
         </div>
         <div class="tip-card">
-          <h4>💡 Gemini & Flow Tips</h4>
+          <h4>⚖️ Copyright Safety</h4>
           <ul>
-            <li>Gemini: paste full prompt into Google Gemini Imagen</li>
-            <li>Be explicit: "100% transparent background" always</li>
-            <li>Flow: use DreamShaper or AnythingV5 checkpoint</li>
-            <li>Flow CFG 7-8 = balanced creativity/accuracy</li>
-            <li>Leonardo: enable Alchemy for best quality</li>
-            <li>Always request PNG export for transparency</li>
+            <li>Aktifkan <strong>Commercial Safe Mode</strong> untuk kategori Pokemon, Sanrio</li>
+            <li>Safe = deskripsi visual saja, tanpa nama brand</li>
+            <li>Reference mode hanya untuk latihan personal, JANGAN dijual</li>
+            <li>Kategori lain (Kawaii, Islamic, Kids) = aman dijual</li>
+            <li>Selalu cek TOS platform tujuan kamu</li>
           </ul>
         </div>
       </div>
-    `;
+    </div>`;
   },
 
   // ── HISTORY ──────────────────────────────────────
